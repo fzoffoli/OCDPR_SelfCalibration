@@ -19,8 +19,8 @@ folder = 'data';
 %%% choose the desired robot
 [cdpr_parameters, cdpr_variables, cdpr_ws_data ,cdpr_outputs,record,utilities] = ...
  LoadConfigAndInit("IRMA8_platform_prot","IRMA8_platform_prot");
-cdpr_variables = UpdateIKZeroOrd([0; 0; 0],...
-  [0;0;0],cdpr_parameters,cdpr_variables);
+cdpr_variables = UpdateIKZeroOrd([0.5; 0; 0.5],...
+  [0;pi/6;0],cdpr_parameters,cdpr_variables);
 record.SetFrame(cdpr_variables,cdpr_parameters);%
  ws_info = LoadWsInfo("8_cable_info");
  
