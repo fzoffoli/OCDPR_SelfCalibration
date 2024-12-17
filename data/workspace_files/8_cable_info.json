@@ -1,0 +1,11 @@
+{
+  "tension_limits" : [[50],[2000]],
+  "z_inferior_limit" : -1,
+  "workspace_type" : "TRANSLATIONAL",
+  "display_criteria" : "TENSION_SENSITIVITY",
+  "mesh_divider" : 20,
+  "display_grid_divider" : 4,
+  "delta_z_safe" : 0,
+  "visualize_cdpr": 1,
+  "l_error": 0
+}

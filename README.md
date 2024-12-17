@@ -15,6 +15,7 @@ Both MATLAB functions and scripts are documented in _[MATLAB documentation style
 
 Most of the code is already documented, the rest is in development.
 
+This code consider the CDPR modelling with winches on the platform, it was derived from a version where winches were placed in the frame.
 ## Prerequisites
 
 All the function and scripts have been tested with _[MATLAB2022b](https://mathworks.com/downloads/web_downloads/download_release?release=R2022b)_.

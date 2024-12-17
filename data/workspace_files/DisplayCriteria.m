@@ -1,0 +1,26 @@
+classdef DisplayCriteria
+    enumeration
+        POSITION_SENSITIVITY,
+        ORIENTATION_SENSITIVITY,
+        TENSION_SENSITIVITY,
+        TENSION_SENSITIVITY_2,
+        TENSION_SENSITIVITYmap,
+        TENSION_SENSITIVITYHeurmap,
+        TENSION_SENSITIVITYpair,
+        TENSION_SENSITIVITYcontour,
+        TENSION_SENSITIVITYsvdmin,
+        TENSION_SENSITIVITYmultiplicity,
+        TENSION_SENSITIVITYinputRatio,
+        TENSION_ERR_INSENSITIVE_WS,
+        KIN_ACCURATE_WS,
+        KA_TEI_WS
+        CABLE_SENSITIVITYrot,
+        CABLE_SENSITIVITYpos,
+        CABLE_SENSITIVITYrotCardou,
+        CABLE_SENSITIVITYposCardou,
+        MANIPULABILITY,
+        MAX_TENSION,
+        MIN_TENSION,
+        NONE
+    end
+end
