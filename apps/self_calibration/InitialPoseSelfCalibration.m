@@ -32,7 +32,7 @@ record.SetFrame(cdpr_variables,cdpr_parameters);%
 dt = 0.001;
 Tmax = 5;
 t = 0:dt:Tmax;
-zeta_0 = [0.5;0;0.5;0;0;0];
+zeta_0 = [-0.5;0;0.5;0;0;0];
 zeta_1 = [0.5;0;-0.5;0;0;0];
 
 zeta_d_numeric = zeros(cdpr_parameters.pose_dim,length(t));
