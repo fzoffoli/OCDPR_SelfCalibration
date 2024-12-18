@@ -1,5 +1,5 @@
 {
-  "tension_limits" : [[50],[2000]],
+  "tension_limits" : [[10],[500]],
   "z_inferior_limit" : -1,
   "workspace_type" : "TRANSLATIONAL",
   "display_criteria" : "TENSION_SENSITIVITY",

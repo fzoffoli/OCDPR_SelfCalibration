@@ -323,7 +323,7 @@ while aa
             %                 end
             %                 else
             if In(1)==Im(1) && In(2)==Im(2) && In(3)==Im(3)&& In(4)==Im(4) && In(5)==Im(5)...
-                    && In(6)==Im(6) && In(7)==Im(7) && In(8)==Im(8) && ~CableInterfPerrault(cdpr_v,cdpr_p)
+                    && In(6)==Im(6) && In(7)==Im(7) && In(8)==Im(8) && ~CableInterfPerreault(cdpr_v,cdpr_p)
                 %  msgbox('polygon determined')
                 aa=0;
                 vertex( :, all(~vertex,1) ) = [];

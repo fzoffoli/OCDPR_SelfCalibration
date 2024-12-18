@@ -1,3 +1,11 @@
+%%% This App allows to calibrate the initial pose of an OCDPR using
+%%% internal sensors. The robot parameters are loaded, then an ideal
+%%% initial pose is provided and a suitable initial guess is given. Two
+%%% approaches are used for self-calibration: with and without the cable
+%%% lengths measures. Subsequently, a minimum number of EE congifurations 
+%%% are computed to optimize the calibration results, using a calibration 
+%%% index. Then, the optimization problems are build and solved using the 
+%%% optimal poses. Finally, the two calibration results are shown and compared.
 clear
 close all
 clc
@@ -20,98 +28,28 @@ addpath('../../libs/prototype_log_parser')
 folder = '../../data';
 
 
-%%% load robot parameters
+% load robot parameters
 [cdpr_parameters, cdpr_variables, cdpr_ws_data ,cdpr_outputs,record,utilities] = ...
  LoadConfigAndInit("IRMA8_platform_prot","IRMA8_platform_prot");
+ ws_info = LoadWsInfo("8_cable_info");
+
+% graphical visualization
 cdpr_variables = UpdateIKZeroOrd([0.5;0;0],...
   [0;0;0],cdpr_parameters,cdpr_variables);
-record.SetFrame(cdpr_variables,cdpr_parameters);%
-%  ws_info = LoadWsInfo("8_cable_info");
+record.SetFrame(cdpr_variables,cdpr_parameters);
 
-% check jacobians
-dt = 0.001;
-Tmax = 5;
-t = 0:dt:Tmax;
-zeta_0 = [-0.5;0;0.5;0;0;0];
-zeta_1 = [0.5;0;-0.5;0;0;0];
+% JacobiansCheck(cdpr_parameters,cdpr_variables); % erase when debugged
 
-zeta_d_numeric = zeros(cdpr_parameters.pose_dim,length(t));
-sigma_d_numeric = zeros(cdpr_parameters.n_cables,length(t));
-psi_d_numeric = zeros(cdpr_parameters.n_cables,length(t));
-l_d_numeric = zeros(cdpr_parameters.n_cables,length(t));
+% set parameters for random pose generation
+N = 10;
+pose_bounds = [-1.5 1.5; -0.3 0.3; -1.5 1; -pi/12 pi/12; -pi/6 pi/6; -pi/12 pi/12];
+method = OptimalConfigurationMethod.MIN_SINGULAR_VALUE;
 
-sigma_d_analytic = zeros(cdpr_parameters.n_cables,length(t));
-psi_d_analytic = zeros(cdpr_parameters.n_cables,length(t));
-l_d_analytic = zeros(cdpr_parameters.n_cables,length(t));
+% generate N poses for optimal calibration
+Z_ideal = GenerateOptimalCalibConfig(cdpr_parameters,cdpr_variables,ws_info,N,pose_bounds,method,0);
 
-for i = 1:length(t)
-    zeta(:,i) = zeta_0+(zeta_1-zeta_0)*t(i)/Tmax;
-    cdpr_variables = UpdateIKZeroOrd(zeta(1:3,i),zeta(4:6,i),cdpr_parameters,cdpr_variables);
-    for j = 1:cdpr_parameters.n_cables
-        sigma(j) = cdpr_variables.cable(j).swivel_ang;
-        psi(j) = cdpr_variables.cable(j).tan_ang;
-        l(j) = cdpr_variables.cable(j).complete_length;
-    end
-    
-    %calculate numeric derivatives
-    if i~=1
-        zeta_d_numeric(:,i) = (zeta(:,i)-zeta_old)/dt;
-        sigma_d_numeric(:,i) = (sigma-sigma_old)/dt;
-        psi_d_numeric(:,i) = (psi-psi_old)/dt;
-        l_d_numeric(:,i) = (l-l_old)/dt;
-    end
-    
-    %calculate analytic derivatives
-    sigma_d_analytic(:,i) = cdpr_variables.analitic_jacobian_s'*(zeta_1-zeta_0)/Tmax;
-    psi_d_analytic(:,i) = cdpr_variables.analitic_jacobian_p'*(zeta_1-zeta_0)/Tmax;
-    l_d_analytic(:,i) = cdpr_variables.analitic_jacobian_l'*(zeta_1-zeta_0)/Tmax;
+% adding distrubances and noise to obtain realistic measures and guesses
 
-    %update old values for differentiation
-    zeta_old = zeta(:,i);
-    for j = 1:cdpr_parameters.n_cables
-        sigma_old(j) = cdpr_variables.cable(j).swivel_ang;
-        psi_old(j) = cdpr_variables.cable(j).tan_ang; 
-        l_old(j) = cdpr_variables.cable(j).complete_length; 
-    end
-end
+% solve self-calibration problem
 
-% figure()
-% subplot(2,1,1)
-% plot(t,zeta,'LineWidth',1.5);
-% legend('x','y','z','phi','psi','theta')
-% subplot(2,1,2)
-% plot(t,zeta_d_numeric,'LineWidth',1.5);
-% legend('x_d','y_d','z_d','phi_d','psi_d','theta_d')
-
-figure()
-subplot(3,1,1)
-plot(t(2:end),sigma_d_numeric(:,2:end),'LineWidth',1.5);
-title('numeric')
-subplot(3,1,2)
-plot(t(2:end),sigma_d_analytic(:,2:end),'LineWidth',1.5);
-title('analytic')
-subplot(3,1,3)
-plot(t(2:end),sigma_d_analytic(:,2:end)-sigma_d_numeric(:,2:end),'LineWidth',1.5);
-title('difference')
-
-figure()
-subplot(3,1,1)
-plot(t(2:end),psi_d_numeric(:,2:end),'LineWidth',1.5);
-title('numeric')
-subplot(3,1,2)
-plot(t(2:end),psi_d_analytic(:,2:end),'LineWidth',1.5);
-title('analytic')
-subplot(3,1,3)
-plot(t(2:end),psi_d_analytic(:,2:end)-psi_d_numeric(:,2:end),'LineWidth',1.5);
-title('difference')
-
-figure()
-subplot(3,1,1)
-plot(t(2:end),l_d_numeric(:,2:end),'LineWidth',1.5);
-title('numeric');
-subplot(3,1,2)
-plot(t(2:end),l_d_analytic(:,2:end),'LineWidth',1.5);
-title('analytic');
-subplot(3,1,3)
-plot(t(2:end),l_d_analytic(:,2:end)-l_d_numeric(:,2:end),'LineWidth',1.5);
-title('difference');
+% show results
