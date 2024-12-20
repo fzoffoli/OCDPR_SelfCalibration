@@ -31,6 +31,9 @@ for i = 1:length(t)
         psi_d_numeric(:,i) = (psi-psi_old)/dt;
         l_d_numeric(:,i) = (l-l_old)/dt;
     end
+    [flag_s,err_s] = checkGradients(@(pose)CheckSwivelFun(cdpr_variables,cdpr_parameters,pose,sigma),zeta(:,i));
+    [flag_p,err_p] = checkGradients(@(pose)CheckTangencyFun(cdpr_variables,cdpr_parameters,pose,psi),zeta(:,i));
+    [flag_l,err_l] = checkGradients(@(pose)CheckCableLenghtsFun(cdpr_variables,cdpr_parameters,pose,l),zeta(:,i));
     
     %calculate analytic derivatives
     sigma_d_analytic(:,i) = cdpr_variables.analitic_jacobian_s'*(zeta_1-zeta_0)/Tmax;

@@ -38,7 +38,7 @@ cdpr_variables = UpdateIKZeroOrd([0.5;0;0],...
   [0;0;0],cdpr_parameters,cdpr_variables);
 record.SetFrame(cdpr_variables,cdpr_parameters);
 
-% JacobiansCheck(cdpr_parameters,cdpr_variables); % erase when debugged
+JacobiansCheck(cdpr_parameters,cdpr_variables); % erase when debugged
 
 % set parameters for random pose generation
 N = 10;
