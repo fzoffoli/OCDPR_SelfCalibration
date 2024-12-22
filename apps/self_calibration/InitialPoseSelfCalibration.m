@@ -34,28 +34,29 @@ folder = '../../data';
  ws_info = LoadWsInfo("8_cable_info");
 
 % graphical visualization
-cdpr_variables = UpdateIKZeroOrd([0.5;0;0],...
+cdpr_variables = UpdateIKZeroOrd([0;0;0],...
   [0;0;0],cdpr_parameters,cdpr_variables);
 record.SetFrame(cdpr_variables,cdpr_parameters);
 
 % JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan_jac bug
 
 % set parameters for optimal pose generation
-k = 20;
+k = 10;
 pose_bounds = [-1.5 1.5; -0.3 0.3; -1.5 1; -pi/12 pi/12; -pi/6 pi/6; -pi/12 pi/12];
 Z_bounds = repmat(pose_bounds,k,2);
 method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
 
 % generate N poses for optimal calibration
+opts_ga = optimoptions('UseParallel',true);
 Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method),...
     k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
-    @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info));
+    @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
 
 % adding distrubances and noise to obtain realistic measures and guesses
 X_ideal = [Z_ideal; zeros(k*(3+cdpr_parameters.pose_dim),1)];
 
 % solve self-calibration problem
-opts = optimoptions();
+opts = optimoptions('UseParallel',true);
 X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_v,cdpr_p,X,...
     k,delta_sigma,roll,pitch,delta_yaw),X_ideal,[],[],[],[],[],[],[],...
     opts);

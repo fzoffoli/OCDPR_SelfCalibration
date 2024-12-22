@@ -14,7 +14,7 @@ for cIdx=1:length(cableComb)
     b_ij = (cdpr_p.cable(cabCouple(2)).pos_OA_glob-cdpr_v.cable(cabCouple(2)).pos_BA_glob)...
         -(cdpr_p.cable(cabCouple(1)).pos_OA_glob-cdpr_v.cable(cabCouple(1)).pos_BA_glob);
     if abs(c_ij'*b_ij)<eps
-        C_ij = [-cdpr_v.cable(cabCouple(1)).pos_BA_glob cdpr_v.cable(cabCouple(2)).pos_BA_glob];
+        C_ij = [cdpr_v.cable(cabCouple(1)).pos_BA_glob -cdpr_v.cable(cabCouple(2)).pos_BA_glob];
         d_ij = pinv(C_ij)*b_ij;
         if all(d_ij>=0) && all(d_ij<=1)
             interf_cc=1;
