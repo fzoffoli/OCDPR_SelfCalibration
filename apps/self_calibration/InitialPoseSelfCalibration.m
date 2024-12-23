@@ -46,17 +46,20 @@ pose_bounds = [-1.5 1.5; -0.3 0.3; -1.5 1; -pi/12 pi/12; -pi/6 pi/6; -pi/12 pi/1
 Z_bounds = repmat(pose_bounds,k,2);
 method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
 
-% generate N poses for optimal calibration
-opts_ga = optimoptions('UseParallel',true);
+%TODO: MAKE A WORKSPACE EVALUATION WITH eps=[0 0 0] BEFORE ASSIGNING lb AND ub
+% generate k poses for optimal calibration
+opts_ga = optimoptions('ga','UseParallel',true);
+tic
 Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method),...
     k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
     @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
+toc
 
 % adding distrubances and noise to obtain realistic measures and guesses
 X_ideal = [Z_ideal; zeros(k*(3+cdpr_parameters.pose_dim),1)];
 
 % solve self-calibration problem
-opts = optimoptions('UseParallel',true);
+opts = optimoptions('lsqnonlin','UseParallel',true);
 X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_v,cdpr_p,X,...
     k,delta_sigma,roll,pitch,delta_yaw),X_ideal,[],[],[],[],[],[],[],...
     opts);

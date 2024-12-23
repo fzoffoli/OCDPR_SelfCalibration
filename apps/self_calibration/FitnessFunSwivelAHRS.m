@@ -4,6 +4,8 @@ function F = FitnessFunSwivelAHRS(cdpr_v,cdpr_p,Z,k,method)
 % initial-pose self-calibration using an AHRS for euler angles measurement
 % and swivel angles variation measurements.
 
+Z=reshape(Z,[cdpr_p.pose_dim*k 1]);  % ga works with row vectors, flip it
+
 % compute the jacobian matrix
 X = [Z;zeros(cdpr_p.n_cables+1,1)];
 delta_sigma = zeros(cdpr_p.n_cables,k);
