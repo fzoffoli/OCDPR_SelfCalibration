@@ -24,14 +24,14 @@ function lim = DetermineLimits(cdpr_p,z_lim_inf)
 % determine frame limits as maximum abs value (suggested)
 frame_attach_p=zeros(cdpr_p.n_cables,3);
 for i=1:cdpr_p.n_cables
-    frame_attach_p(i,:)=cdpr_p.cable(i).pos_OD_glob';
+    frame_attach_p(i,:)=cdpr_p.cable(i).pos_OA_glob';
 end
 limits=[min(frame_attach_p)' max(frame_attach_p)'];
 
 % determine platform limits as maximum abs value
 platform_attach_p=zeros(cdpr_p.n_cables,3);
 for i=1:cdpr_p.n_cables
-    platform_attach_p(i,:)=cdpr_p.cable(i).pos_PA_loc';
+    platform_attach_p(i,:)=cdpr_p.cable(i).pos_PD_loc';
 end
 limits2=[min(platform_attach_p)' max(platform_attach_p)'];
 

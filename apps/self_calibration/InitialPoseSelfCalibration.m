@@ -42,7 +42,7 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 
 % set parameters for optimal pose generation
 k = 10;
-pose_bounds = [-1.5 1.5; -0.3 0.3; -1.5 1; -pi/12 pi/12; -pi/6 pi/6; -pi/12 pi/12];
+pose_bounds = [-1 1; -0.1 0.1; -1.5 0.5; 0 0; 0 0; 0 0];
 Z_bounds = repmat(pose_bounds,k,2);
 method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
 
@@ -56,11 +56,12 @@ Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method)
 toc
 
 % adding distrubances and noise to obtain realistic measures and guesses
-X_ideal = [Z_ideal; zeros(k*(3+cdpr_parameters.pose_dim),1)];
+Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
+X_ideal = [Z_ideal; zeros(k*(3+cdpr_parameters.n_cables),1)];
 
 % solve self-calibration problem
 opts = optimoptions('lsqnonlin','UseParallel',true);
-X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_v,cdpr_p,X,...
+X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
     k,delta_sigma,roll,pitch,delta_yaw),X_ideal,[],[],[],[],[],[],[],...
     opts);
 

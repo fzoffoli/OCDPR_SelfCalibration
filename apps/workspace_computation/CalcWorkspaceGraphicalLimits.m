@@ -9,13 +9,13 @@ for k = 1:ws_data.counter
         for l = 1:4
             switch l
                 case 1
-                    point = cdpr_p.cable(i).pos_OD_glob;
+                    point = cdpr_p.cable(i).pos_OA_glob;
                 case 2
-                    point = cdpr_v.cable(i).pos_OA_glob;
+                    point = cdpr_v.cable(i).pos_OD_glob;
                 case 3
                     point = cdpr_v.platform.position;
                 case 4
-                    point = RecordType.GetIntersectionInPlane(cdpr_v.platform.position,cdpr_v.cable(i).pos_OA_glob,cdpr_v.platform.rot_mat(:,3));
+                    point = RecordType.GetIntersectionInPlane(cdpr_v.platform.position,cdpr_v.cable(i).pos_OD_glob,cdpr_v.platform.rot_mat(:,3));
             end
             
             for j=1:3
