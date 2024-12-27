@@ -41,7 +41,7 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 % JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan_jac bug
 
 % set parameters for optimal pose generation
-k = 10;
+k = 40;
 pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];
 Z_bounds = repmat(pose_bounds,k,2);
 method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
@@ -77,7 +77,7 @@ Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
 Z_real=Z_ideal+pose_bias+pose_noise;
 %----------------------------------------------------------------
 %---------II state-estimation disturbances (bias and noise)------
-delta_sigma_meas = zeros(cdpr_parameters.n_cables*k,1);
+delta_sigma_meas = zeros(cdpr_parameters.n_cables,k);
 delta_psi_meas = zeros(k,1);
 phi_meas = zeros(k,1);
 theta_meas = zeros(k,1);
@@ -90,25 +90,25 @@ for i = 1:k
     for j = 1:cdpr_parameters.n_cables
         if i==1
             sigma_0(j) = cdpr_variables.cable(j).swivel_ang;
-            delta_sigma_meas(j) = 0;
+            delta_sigma_meas(j,i) = 0;
         else
-            delta_sigma_meas(i*6-6+j) = cdpr_variables.cable(j).swivel_ang-...
+            delta_sigma_meas(j,i) = cdpr_variables.cable(j).swivel_ang-...
                 sigma_0(j);
         end
     end
     % delta yaw IK simulation
     if i==1
-       psi_0 = cdpr_variables.pose(6);
+       psi_0 = cdpr_variables.platform.pose(6);
        delta_psi_meas(i) = 0; 
     else
-       delta_psi_meas(i) = cdpr_variables.pose(6)-psi_0;
+       delta_psi_meas(i) = cdpr_variables.platform.pose(6)-psi_0;
     end
     % roll and pitch IK simulation
-    phi_meas(i) = cdpr_variables.platform(4);
-    theta_meas(i) = cdpr_variables.platform(5);
+    phi_meas(i) = cdpr_variables.platform.pose(4);
+    theta_meas(i) = cdpr_variables.platform.pose(5);
 end
-X_real = [Z_real,sigma_0,psi_0];
-X_guess = [Z_ideal,zeros(k*(cdpr_parameters.n_cables+3),1)];
+X_real = [Z_real;sigma_0;psi_0];
+X_guess = [Z_ideal;zeros(cdpr_parameters.n_cables+1,1)];
 
 
 % solve self-calibration problem
