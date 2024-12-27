@@ -55,14 +55,66 @@ Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method)
     @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
 toc
 
-% adding distrubances and noise to obtain realistic measures and guesses
+% adding distrubances in the simulation to obtain realistic measures and guesses
+%----------I control disturbances (bias and noise)---------------
+position_control_bias = 0.0;                %[m]
+orientation_control_bias = deg2rad(0.0);    %[deg]
+position_control_noise = 0.0;               %[m]
+orientation_control_noise = deg2rad(0.0);   %[rad]
+pose_bias = repmat([position_control_bias*ones(3,1);...
+    orientation_control_bias*ones(3,1)],k,1);
+pose_noise = zeros(cdpr_parameters.pose_dim*k,1);
+for i=1:k
+    pose_noise(i*6-5:i*6) = [position_control_noise*(2*rand-1); ...
+        position_control_noise*(2*rand-1);
+        position_control_noise*(2*rand-1);
+        orientation_control_noise*(2*rand-1);
+        orientation_control_noise*(2*rand-1);
+        orientation_control_noise*(2*rand-1)];
+end
+
 Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
-X_ideal = [Z_ideal; zeros(k*(3+cdpr_parameters.n_cables),1)];
+Z_real=Z_ideal+pose_bias+pose_noise;
+%----------------------------------------------------------------
+%---------II state-estimation disturbances (bias and noise)------
+delta_sigma_meas = zeros(cdpr_parameters.n_cables*k,1);
+delta_psi_meas = zeros(k,1);
+phi_meas = zeros(k,1);
+theta_meas = zeros(k,1);
+sigma_0 = zeros(cdpr_parameters.n_cables,1);
+psi_0 = 0;
+for i = 1:k
+    zeta_i = Z_ideal(6*i-5:6*i);
+    cdpr_variables = UpdateIKZeroOrd(zeta_i(1:3),zeta_i(4:6),cdpr_parameters,cdpr_variables);
+    % delta swivel IK simulation
+    for j = 1:cdpr_parameters.n_cables
+        if i==1
+            sigma_0(j) = cdpr_variables.cable(j).swivel_ang;
+            delta_sigma_meas(j) = 0;
+        else
+            delta_sigma_meas(i*6-6+j) = cdpr_variables.cable(j).swivel_ang-...
+                sigma_0(j);
+        end
+    end
+    % delta yaw IK simulation
+    if i==1
+       psi_0 = cdpr_variables.pose(6);
+       delta_psi_meas(i) = 0; 
+    else
+       delta_psi_meas(i) = cdpr_variables.pose(6)-psi_0;
+    end
+    % roll and pitch IK simulation
+    phi_meas(i) = cdpr_variables.platform(4);
+    theta_meas(i) = cdpr_variables.platform(5);
+end
+X_real = [Z_real,sigma_0,psi_0];
+X_guess = [Z_ideal,zeros(k*(cdpr_parameters.n_cables+3),1)];
+
 
 % solve self-calibration problem
 opts = optimoptions('lsqnonlin','UseParallel',true);
 X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-    k,delta_sigma,roll,pitch,delta_yaw),X_ideal,[],[],[],[],[],[],[],...
+    k,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
     opts);
 
 % show results
