@@ -45,11 +45,11 @@ qmin=ws_info.tension_limits(1)*ones(cdpr_p.n_cables,1)-fp;
 
 % double check for interference
 % if Cab2CabInterfLumelsky(cdpr_v,cdpr_p)
-%     if CableInterfPerrault(cdpr_v,cdpr_p)
-%         disp('sburra')
-%     else
-%         disp('no buono')
-%     end
+    % if CableInterfPerreault(cdpr_v,cdpr_p)
+    %     disp('okkk')
+    % else
+    %     disp('not okkk')
+    % end
 % end
 
 %uncomment/comment for graphic representation
@@ -323,7 +323,7 @@ while aa
             %                 end
             %                 else
             if In(1)==Im(1) && In(2)==Im(2) && In(3)==Im(3)&& In(4)==Im(4) && In(5)==Im(5)...
-                    && In(6)==Im(6) && In(7)==Im(7) && In(8)==Im(8)%% && ~CableInterfPerreault(cdpr_v,cdpr_p)
+                    && In(6)==Im(6) && In(7)==Im(7) && In(8)==Im(8) && ~CableInterfPerreault(cdpr_v,cdpr_p)
                 %  msgbox('polygon determined')
                 aa=0;
                 vertex( :, all(~vertex,1) ) = [];
@@ -345,7 +345,8 @@ while aa
                     delta_tau_c=err(7:8);                                         % cable tension measure error
                     % [out.sigmaTauL(out.counter),tauP_dl,~,dJ_ort]=InputRatioIndex(cdpr_v,cdpr_p,cableIdx,Jd,Jc,tau_c',delta_l);
                     % out.flag = TensionErrorInsensWS_2dor(cdpr_p,ws_info,fp,tauP_dl,N,dJ_ort,delta_tau_c,delta_l);  
-                    out.teiw(out.counter)=1;          %soft-case scenario
+                    % out.teiw(out.counter)=CableInterfPerreault(cdpr_v,cdpr_p);          %soft-case scenario
+                    out.teiw(out.counter)=0;
 %                     out.teiw(out.counter)=out.teiw(out.counter)*WrenchFeasibleErrorInsensitive(cdpr_p,ws_info,fp,tauP_dl,N,dJ_ort,delta_tau_c,delta_l);   %worst-case scenario
                     if out.teiw(out.counter)==0
                         break

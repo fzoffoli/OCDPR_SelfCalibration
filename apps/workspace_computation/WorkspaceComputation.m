@@ -7,6 +7,7 @@ addpath('../../data')
 addpath('../../github_repo')
 addpath('../../libs')
 addpath('../../data/workspace_files')
+addpath('../../apps/self_calibration')
 addpath('../../libs/cdpr_model')
 addpath('../../libs/export_utilities')
 addpath('../../libs/numeric')
@@ -19,7 +20,7 @@ folder = '../../data';
 %%% choose the desired robot
 [cdpr_parameters, cdpr_variables, cdpr_ws_data ,cdpr_outputs,record,utilities] = ...
  LoadConfigAndInit("IRMA8_platform_prot","IRMA8_platform_prot");
-cdpr_variables = UpdateIKZeroOrd([0; 0; 0],...
+cdpr_variables = UpdateIKZeroOrd([1.78352; 0.197381; -1.28125],...
   [0;0;0],cdpr_parameters,cdpr_variables);
 record.SetFrame(cdpr_variables,cdpr_parameters);%
  ws_info = LoadWsInfo("8_cable_info");

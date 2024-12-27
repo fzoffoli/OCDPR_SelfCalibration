@@ -5,10 +5,10 @@ function interf_detected = CableInterfPerreault(cdpr_v,cdpr_p)
 % check cc interf for all combinations of cables
 cableComb = nchoosek(1:cdpr_p.n_cables,cdpr_p.n_cables-cdpr_p.pose_dim);
 interf_cc = 0;
+eps = 1.0e-2;  % numeric zero for planes coincidence
 for cIdx=1:length(cableComb)
     cabCouple = cableComb(cIdx,:);
 
-    eps = 1.0e-1;  % numeric zero for planes coincidence
     c_ij = Anti(cdpr_v.cable(cabCouple(1)).pos_BA_glob)*(cdpr_v.cable(cabCouple(2)).pos_BA_glob);
     % a_ij = cdpr_v.cable(cabCouple(2)).pos_OA_glob-cdpr_v.cable(cabCouple(1)).pos_OA_glob;
     b_ij = (cdpr_p.cable(cabCouple(2)).pos_OA_glob-cdpr_v.cable(cabCouple(2)).pos_BA_glob)...

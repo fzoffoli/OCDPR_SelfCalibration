@@ -42,11 +42,11 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 
 % set parameters for optimal pose generation
 k = 10;
-pose_bounds = [-1 1; -0.1 0.1; -1.5 0.5; 0 0; 0 0; 0 0];
+pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];
 Z_bounds = repmat(pose_bounds,k,2);
 method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
 
-%TODO: MAKE A WORKSPACE EVALUATION WITH eps=[0 0 0] BEFORE ASSIGNING lb AND ub
+%TODO: MAKE A WORKSPACE EVALUATION WITH eps=[0 0 0], 
 % generate k poses for optimal calibration
 opts_ga = optimoptions('ga','UseParallel',true);
 tic
