@@ -41,7 +41,7 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 % JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan_jac bug
 
 % set parameters for optimal pose generation
-k = 40;
+k = 60;
 pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];
 Z_bounds = repmat(pose_bounds,k,2);
 method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
@@ -52,9 +52,9 @@ tic
 Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method),...
     k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
     @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
-opt_pose_comp_time = toc
+opt_pose_comp_time = toc;
 save(strcat('calib_pose_0orient_',num2str(k)),"Z_ideal",...
-    'cdpr_parameters','cdpr_variables','k');
+    'cdpr_parameters','cdpr_variables','k',"opt_pose_comp_time");
 
 %% adding distrubances in the simulation to obtain realistic measures and guesses
 %----------I control disturbances (bias and noise)---------------
@@ -114,11 +114,14 @@ X_guess = [Z_ideal;zeros(cdpr_parameters.n_cables+1,1)];
 
 % solve self-calibration problem
 opts = optimoptions('lsqnonlin','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8,'UseParallel',true);
+tic
 X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
     k,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
     opts);
+self_calib_comp_time=toc;
 
 % store and show results
+output.sc_comp_time = self_calib_comp_time;
 output.X_real = X_real;
 output.X_sol = X_sol;
 output.InitialPositionErrorNorm = norm(X_real(1:3)-X_sol(1:3));
