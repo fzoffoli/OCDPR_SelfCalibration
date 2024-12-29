@@ -4,7 +4,7 @@
 %%% approaches are used for self-calibration: with and without the cable
 %%% lengths measures. Subsequently, a minimum number of EE congifurations 
 %%% are computed to optimize the calibration results, using a calibration 
-%%% index. Then, the optimization problems are build and solved using the 
+%%% index. The optimization problems are build and solved using the 
 %%% optimal poses. Finally, the two calibration results are shown and compared.
 clear
 close all
@@ -41,12 +41,20 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 % JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan_jac bug
 
 % set parameters for optimal pose generation
-k = 60;
+for k=10:10:60
+% k = 10;
 pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];
 Z_bounds = repmat(pose_bounds,k,2);
 method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
 
 % generate k poses for optimal calibration
+Z_not_ideal = [linspace(pose_bounds(1,1),pose_bounds(1,2),k);
+                linspace(pose_bounds(2,1),pose_bounds(2,2),k);
+                linspace(pose_bounds(3,1),pose_bounds(3,2),k);
+                zeros(1,k);
+                zeros(1,k);
+                zeros(1,k)];
+Z_not_ideal=reshape(Z_not_ideal,[k*cdpr_parameters.pose_dim 1]);
 opts_ga = optimoptions('ga','UseParallel',true);
 tic
 Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method),...
@@ -58,12 +66,14 @@ save(strcat('calib_pose_0orient_',num2str(k)),"Z_ideal",...
 
 %% adding distrubances in the simulation to obtain realistic measures and guesses
 %----------I control disturbances (bias and noise)---------------
-position_control_bias = 0.020;                %[m]
-orientation_control_bias = deg2rad(3);    %[deg]
+delta_max = 5;
+position_control_bias = linspace(0.0,0.040,delta_max);                %[m]
+orientation_control_bias = linspace(0,deg2rad(3),delta_max);    %[deg]
 position_control_noise = 0.002;               %[m]
 orientation_control_noise = deg2rad(1);   %[rad]
-pose_bias = repmat([position_control_bias*ones(3,1);...
-    orientation_control_bias*ones(3,1)],k,1);
+for delta=1:delta_max
+pose_bias = repmat([position_control_bias(delta)*ones(3,1);...
+    orientation_control_bias(delta)*ones(3,1)],k,1);
 pose_noise = zeros(cdpr_parameters.pose_dim*k,1);
 for i=1:k
     pose_noise(i*6-5:i*6) = [position_control_noise*(2*rand-1); ...
@@ -133,10 +143,12 @@ angle_init_sol = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platf
 output.InitialOrientationError = rad2deg(abs(angle_init_sol-angle_init_real));
 
 filename=strcat(folder,'/out_',num2str(k), ...
-    '_',strrep(num2str(position_control_bias),'.',''), ...
+    '_',strrep(num2str(position_control_bias(delta)),'.',''), ...
     '_',strrep(num2str(position_control_noise),'.',''),...
-    '_',strrep(num2str(rad2deg(orientation_control_bias)),'.',''), ...
+    '_',strrep(num2str(rad2deg(orientation_control_bias(delta))),'.',''), ...
     '_',strrep(num2str(rad2deg(orientation_control_noise)),'.',''),'.mat');
 save(filename,"Z_ideal",'cdpr_parameters','cdpr_variables','k','output')
 
 disp(output);
+end
+end
