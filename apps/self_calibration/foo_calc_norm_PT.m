@@ -1,7 +1,7 @@
 function [norm_PT,J] = foo_calc_norm_PT(l_d,R,d_m,q,s,rho_m,h,theta_m)
 
 if theta_m > l_d*2*pi/rho_m
-    disp('theta motor too big!')
+    msgbox('theta motor too big!')
 end
 beta = asin(q/R-(theta_m*rho_m)/(2*pi*R));
 P = [-R*sin(beta); R*cos(beta); h];
