@@ -29,29 +29,24 @@ folder = '../../data';
 N = 10000;
 theta_m = linspace(0,cdpr_parameters.cable(1).drum_length*2*pi/cdpr_parameters.cable(1).drum_pitch,N);
 
-norm_PT=zeros(size(theta_m));
-[flag,error] = checkGradients(@(theta_)foo_calc_norm_PT(cdpr_parameters.cable(1).drum_length,...
-    cdpr_parameters.cable(1).flag_radius,cdpr_parameters.cable(1).drum_diameter, ...
-    cdpr_parameters.cable(1).q,cdpr_parameters.cable(1).s,cdpr_parameters.cable(1).drum_pitch, ...
-    cdpr_parameters.cable(1).h,theta_),theta_m(250));
+[flag,error] = checkGradients(@(theta_m_)foo(cdpr_parameters.cable(1),theta_m_),0);
 for i = 1:N
-    norm_PT(i)=foo_calc_norm_PT(cdpr_parameters.cable(1).drum_length,...
-    cdpr_parameters.cable(1).flag_radius,cdpr_parameters.cable(1).drum_diameter, ...
-    cdpr_parameters.cable(1).q,cdpr_parameters.cable(1).s,cdpr_parameters.cable(1).drum_pitch, ...
-    cdpr_parameters.cable(1).h,theta_m(i));
+    l(i)=foo(cdpr_parameters.cable(1),theta_m(i));
+    l_approx(i)=theta_m(i)*cdpr_parameters.cable(1).drum_diameter/2;
+    l_approx(i)=l_approx(i)+l(1);
 end
-figure()
-plot(norm_PT);
-title('norm PT')
 
-% figure()
-% plot(P(1,:));
-% title('Px')
-% 
-% figure()
-% plot(beta);
-% title('beta')
-% 
-% figure()
-% plot(PA);
-% title('PA')
+figure()
+plot(rad2deg(theta_m),l,'LineWidth',1.5)
+hold on
+plot(rad2deg(theta_m),l_approx,'--','LineWidth',1.5)
+xlabel('\theta_m [deg]')
+ylabel('[m]')
+legend('l_{real}','l_{approx}')
+title('Cable length')
+
+figure()
+plot(rad2deg(theta_m),(l-l_approx)*1000,'LineWidth',1.5);
+xlabel('\theta_m')
+ylabel('[mm]')
+title('Difference (l_{real}-l_{approx})')
