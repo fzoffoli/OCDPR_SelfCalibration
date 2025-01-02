@@ -43,7 +43,9 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 % set parameters for optimal pose generation
 for k=10:10:60
 % k = 10;
-pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];
+% pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
+pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6;
+    -pi/24 pi/24];
 Z_bounds = repmat(pose_bounds,k,2);
 method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
 
@@ -61,7 +63,7 @@ Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method)
     k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
     @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
 opt_pose_comp_time = toc;
-save(strcat('calib_pose_0orient_',num2str(k)),"Z_ideal",...
+save(strcat('calib_pose_wo_cables_',num2str(k)),"Z_ideal",...
     'cdpr_parameters','cdpr_variables','k',"opt_pose_comp_time");
 
 %% adding distrubances in the simulation to obtain realistic measures and guesses
@@ -142,7 +144,7 @@ cdpr_variables=UpdateIKZeroOrd(X_sol(1:3),X_sol(4:6),cdpr_parameters,cdpr_variab
 angle_init_sol = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
 output.InitialOrientationError = rad2deg(abs(angle_init_sol-angle_init_real));
 
-filename=strcat(folder,'/out_',num2str(k), ...
+filename=strcat(folder,'/out_wo_cables_',num2str(k), ...
     '_',strrep(num2str(position_control_bias(delta)),'.',''), ...
     '_',strrep(num2str(position_control_noise),'.',''),...
     '_',strrep(num2str(rad2deg(orientation_control_bias(delta))),'.',''), ...
