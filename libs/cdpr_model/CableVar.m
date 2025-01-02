@@ -26,6 +26,9 @@ classdef CableVar
         geometric_jacobian_p_col;%
         analitic_jacobian_p_col;%
         % VERS_U, VERS_W and VERS_N define a right handed coordinate system.
+        lambda;%is the variable component of the winch transmission
+        theta_motor;% is the motor angle
+        l_theta_deriv%is the derivative of the cable length with respect to theta_motor
         
         complete_speed;% is the 1th order time derivative of LENGTH.
         swivel_ang_vel;% is the 1th order time derivative of SWIVEL_ANG.

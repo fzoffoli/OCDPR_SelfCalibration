@@ -16,6 +16,14 @@ classdef CableParameters
     swivel_pulley_transmission_ratio;% is the swivel pulley-encoder transmission ratio. 
     l0;% is the initial cable length
     motor_transmission_ratio;% is the motor-cable transmission ratio.
+    drum_diameter;%
+    drum_length;%
+    drum_pitch;%
+    flag_radius;%
+    h;%is the distance between the flag axes and the drum axis
+    q;%is the x relative position beteen the drum and the flag
+    s;%is the y relative position between the drum and the flag
+    C;%is the cable length between the initial cable attach point in the drum and the swivel pulley frame
     id
   end
   methods
@@ -38,6 +46,14 @@ classdef CableParameters
       obj.swivel_pulley_transmission_ratio = cable_parameters_struct.pulley.transmission_ratio;
       obj.l0 = cable_parameters_struct.winch.l0;
       obj.motor_transmission_ratio = cable_parameters_struct.winch.transmission_ratio;
+      obj.drum_diameter = cable_parameters_struct.winch.drum_diameter;
+      obj.drum_length = cable_parameters_struct.winch.drum_length;
+      obj.drum_pitch = cable_parameters_struct.winch.drum_pitch;
+      obj.flag_radius = cable_parameters_struct.winch.flag_radius;
+      obj.h = cable_parameters_struct.winch.h;
+      obj.q = cable_parameters_struct.winch.q;
+      obj.s = cable_parameters_struct.winch.s;
+      obj.C = cable_parameters_struct.winch.C;
       obj.rot_mat = [obj.vers_i_loc obj.vers_j_loc obj.vers_k_loc];
     end
   end
