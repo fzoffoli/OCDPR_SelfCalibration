@@ -41,7 +41,8 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 % JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan jac and theta motor jac
 
 % set parameters for optimal pose generation
-k_set=10:10:30;
+% k_set=10:10:30;
+k_set=100;
 pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
 % pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
 
@@ -131,9 +132,9 @@ for meas_idx = 1:length(k_set)
         output.InitialOrientationError = rad2deg(abs(angle_init_sol-angle_init_real));
 
         filename=strcat(folder,'/out_0orient_',num2str(k), ...
-            '_',strrep(num2str(position_control_bias(delta)),'.',''), ...
+            '_',strrep(num2str(position_control_bias(disturb_idx)),'.',''), ...
             '_',strrep(num2str(position_control_noise),'.',''),...
-            '_',strrep(num2str(rad2deg(orientation_control_bias(delta))),'.',''), ...
+            '_',strrep(num2str(rad2deg(orientation_control_bias(disturb_idx))),'.',''), ...
             '_',strrep(num2str(rad2deg(orientation_control_noise)),'.',''),'.mat');
         save(filename,"Z_ideal",'cdpr_parameters','cdpr_variables','k','output')
 
