@@ -14,7 +14,7 @@ cdpr_v.platform = UpdatePlatformPose(position,orientation,...
   cdpr_p.platform.rotation_parametrization,cdpr_p.platform.pos_PG_loc,cdpr_v.platform);
 for i=1:length(cdpr_v.cable)
   cdpr_v.cable(i) = UpdateCableZeroOrd(cdpr_p.cable(i),cdpr_v.platform,cdpr_v.cable(i));
-  cdpr_v.cable(i) = UpdateTransmissionZeroOrd(cdpr_p.cable(i),cdpr_v.cable(i));
+  % cdpr_v.cable(i) = UpdateTransmissionZeroOrd(cdpr_p.cable(i),cdpr_v.cable(i));
 end
 cdpr_v = cdpr_v.UpdateJacobians();
 cdpr_v = cdpr_v.UpdateDMatrix();

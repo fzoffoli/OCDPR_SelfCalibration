@@ -41,10 +41,10 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan_jac bug
 
 % set parameters for optimal pose generation
-k_set=10:10:60;
-pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
-% pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6;
-%     -pi/24 pi/24];
+k_set=10:10:30;
+% pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
+pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6;
+    -pi/24 pi/24];
 for i=1:length(k_set)
     k = k_set(i);  %0 orient
     Z_bounds = repmat(pose_bounds,k,2);
@@ -67,7 +67,7 @@ for i=1:length(k_set)
     %     k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
     %     @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
     opt_pose_comp_time = toc;
-    save(strcat('calib_pose_0orient_',num2str(k)),"Z_ideal",...
+    save(strcat('calib_pose_wo_servos_',num2str(k)),"Z_ideal",...
         'cdpr_parameters','cdpr_variables','k',"opt_pose_comp_time");
 end
 %% Initial-Pose Self-Calibration simulation
@@ -129,14 +129,20 @@ for idx = 1:length(k_set)
             theta_meas(i) = cdpr_variables.platform.pose(5);
         end
         X_real = [Z_real;sigma_0;psi_0];
-        X_guess = [Z_ideal;zeros(cdpr_parameters.n_cables+1,1)];
+        cdpr_variables = UpdateIKZeroOrd(Z_ideal(1:3),Z_ideal(4:6),cdpr_parameters,cdpr_variables);
+        sigma_0_guess = zeros(cdpr_parameters.n_cables,1);
+        for j = 1:cdpr_parameters.n_cables
+            sigma_0_guess(j) = cdpr_variables.cable(j).swivel_ang;
+        end
+        X_guess = [Z_ideal;sigma_0_guess;Z_ideal(6)];
         X_lb = [repmat([-2.4;-0.3;-1.7;-pi;-pi;-pi],k,1); -pi*ones(...
             cdpr_parameters.n_cables+1,1)];
         X_ub = [repmat([2.4;0.3;1.7;pi;pi;pi],k,1); pi*ones(...
             cdpr_parameters.n_cables+1,1)];
 
         % solve self-calibration problem
-        opts = optimoptions('lsqnonlin','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8,'UseParallel',true);
+        opts = optimoptions('lsqnonlin','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
+            'StepTolerance',1e-8,'UseParallel',true);
         tic
         X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
             k,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,X_lb,X_ub,[],[],[],[],[],...
@@ -155,12 +161,12 @@ for idx = 1:length(k_set)
         angle_init_sol = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
         output.InitialOrientationError = rad2deg(abs(angle_init_sol-angle_init_real));
 
-        filename=strcat(folder,'/out_',num2str(k), ...
+        filename=strcat(folder,'/out_wo_servos_',num2str(k), ...
             '_',strrep(num2str(position_control_bias(delta)),'.',''), ...
             '_',strrep(num2str(position_control_noise),'.',''),...
             '_',strrep(num2str(rad2deg(orientation_control_bias(delta))),'.',''), ...
             '_',strrep(num2str(rad2deg(orientation_control_noise)),'.',''),'.mat');
-        save(filename,"Z_ideal",'cdpr_parameters','cdpr_variables','k','output')
+        % save(filename,"Z_ideal",'cdpr_parameters','cdpr_variables','k','output')
 
         disp(output);
     end

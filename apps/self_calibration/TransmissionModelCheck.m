@@ -85,9 +85,9 @@ J_theta_m_numeric = diff(theta_m)./diff(l);
 
 figure()
 plot(theta_motor)
-plot(rad2deg(theta_m),l,'LineWidth',1.5)
+plot(l,rad2deg(theta_m),'LineWidth',1.5)
 hold on
-plot(rad2deg(theta_motor),l,'--','LineWidth',1.5)
+plot(l,rad2deg(theta_motor),'--','LineWidth',1.5)
 grid on
 xlabel('l [m]')
 ylabel('[deg]')
