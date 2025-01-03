@@ -38,7 +38,7 @@ cdpr_variables = UpdateIKZeroOrd([0;0;0],...
   [0;0;0],cdpr_parameters,cdpr_variables);
 record.SetFrame(cdpr_variables,cdpr_parameters);
 
-% JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan_jac bug
+JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan_jac bug
 
 % set parameters for optimal pose generation
 k_set=10:10:60;
