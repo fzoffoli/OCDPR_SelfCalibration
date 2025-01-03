@@ -38,15 +38,14 @@ cdpr_variables = UpdateIKZeroOrd([0;0;0],...
   [0;0;0],cdpr_parameters,cdpr_variables);
 record.SetFrame(cdpr_variables,cdpr_parameters);
 
-JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan_jac bug
+% JacobiansCheck(cdpr_parameters,cdpr_variables); % fix the tan jac and theta motor jac
 
 % set parameters for optimal pose generation
 k_set=10:10:30;
-% pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
-pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6;
-    -pi/24 pi/24];
+pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
+% pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
 for i=1:length(k_set)
-    k = k_set(i);  %0 orient
+    k = k_set(i);
     Z_bounds = repmat(pose_bounds,k,2);
     method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
 
@@ -58,6 +57,8 @@ for i=1:length(k_set)
         zeros(1,k);
         zeros(1,k)];
     Z_not_ideal=reshape(Z_not_ideal,[k*cdpr_parameters.pose_dim 1]);
+    
+    % solve the optimal configuration problem
     opts_ga = optimoptions('ga','UseParallel',true);
     tic
     Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method),...
@@ -67,68 +68,29 @@ for i=1:length(k_set)
     %     k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
     %     @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
     opt_pose_comp_time = toc;
-    save(strcat('calib_pose_wo_servos_',num2str(k)),"Z_ideal",...
+    
+    % store data
+    save(strcat('calib_pose_0orient_',num2str(k)),"Z_ideal",...
         'cdpr_parameters','cdpr_variables','k',"opt_pose_comp_time");
 end
 %% Initial-Pose Self-Calibration simulation
-for idx = 1:length(k_set)
-    k = k_set(idx);
+for meas_idx = 1:length(k_set)
+    % load measure set
+    k = k_set(meas_idx);
     load(strcat('calib_pose_0orient_',num2str(k),'.mat'))
     
-    % control disturb simulation
-    delta_max = 5;
+    % assign disturb values
     position_control_bias = linspace(0.0,0.040,delta_max);          %[m]
-    orientation_control_bias = linspace(0,deg2rad(3),delta_max);    %[deg]
+    orientation_control_bias = linspace(0,deg2rad(3),delta_max);    %[rad]
     position_control_noise = 0.002;           %[m]
     orientation_control_noise = deg2rad(1);   %[rad]
-    for delta=1:delta_max
-        pose_bias = repmat([position_control_bias(delta)*ones(3,1);...
-            orientation_control_bias(delta)*ones(3,1)],k,1);
-        pose_noise = zeros(cdpr_parameters.pose_dim*k,1);
-        for i=1:k
-            pose_noise(i*6-5:i*6) = [position_control_noise*(2*rand-1); ...
-                position_control_noise*(2*rand-1);
-                position_control_noise*(2*rand-1);
-                orientation_control_noise*(2*rand-1);
-                orientation_control_noise*(2*rand-1);
-                orientation_control_noise*(2*rand-1)];
-        end
+    for disturb_idx=1:length(position_control_bias)
 
-        Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
-        Z_real=Z_ideal+pose_bias+pose_noise;
-
-        % data acquisition simulation through IK
-        delta_sigma_meas = zeros(cdpr_parameters.n_cables,k);
-        delta_psi_meas = zeros(k,1);
-        phi_meas = zeros(k,1);
-        theta_meas = zeros(k,1);
-        sigma_0 = zeros(cdpr_parameters.n_cables,1);
-        psi_0 = 0;
-        for i = 1:k
-            zeta_i = Z_real(6*i-5:6*i);
-            cdpr_variables = UpdateIKZeroOrd(zeta_i(1:3),zeta_i(4:6),cdpr_parameters,cdpr_variables);
-            % delta swivel IK simulation
-            for j = 1:cdpr_parameters.n_cables
-                if i==1
-                    sigma_0(j) = cdpr_variables.cable(j).swivel_ang;
-                    delta_sigma_meas(j,i) = 0;
-                else
-                    delta_sigma_meas(j,i) = cdpr_variables.cable(j).swivel_ang-...
-                        sigma_0(j);
-                end
-            end
-            % delta yaw IK simulation
-            if i==1
-                psi_0 = cdpr_variables.platform.pose(6);
-                delta_psi_meas(i) = 0;
-            else
-                delta_psi_meas(i) = cdpr_variables.platform.pose(6)-psi_0;
-            end
-            % roll and pitch IK simulation
-            phi_meas(i) = cdpr_variables.platform.pose(4);
-            theta_meas(i) = cdpr_variables.platform.pose(5);
-        end
-        X_real = [Z_real;sigma_0;psi_0];
+        % control disturb simulation
+        X_real = ControlSimulationSwivelAHRS(cdpr_v,cdpr_p,Z_ideal, ...
+            position__control_bias(disturb_idx), ...
+            orientation_control_bias(disturb_idx), ...
+            position_control_noise,orientation_control_noise);
         cdpr_variables = UpdateIKZeroOrd(Z_ideal(1:3),Z_ideal(4:6),cdpr_parameters,cdpr_variables);
         sigma_0_guess = zeros(cdpr_parameters.n_cables,1);
         for j = 1:cdpr_parameters.n_cables
