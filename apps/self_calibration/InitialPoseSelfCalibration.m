@@ -44,6 +44,8 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 k_set=10:10:30;
 pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
 % pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
+
+%% Optimal Configuration generation
 for i=1:length(k_set)
     k = k_set(i);
     Z_bounds = repmat(pose_bounds,k,2);
@@ -80,17 +82,22 @@ for meas_idx = 1:length(k_set)
     load(strcat('calib_pose_0orient_',num2str(k),'.mat'))
     
     % assign disturb values
-    position_control_bias = linspace(0.0,0.040,delta_max);          %[m]
-    orientation_control_bias = linspace(0,deg2rad(3),delta_max);    %[rad]
+    disturb_mesh = 5;
+    position_control_bias = linspace(0.0,0.040,disturb_mesh);          %[m]
+    orientation_control_bias = linspace(0,deg2rad(3),disturb_mesh);    %[rad]
     position_control_noise = 0.002;           %[m]
     orientation_control_noise = deg2rad(1);   %[rad]
     for disturb_idx=1:length(position_control_bias)
 
         % control disturb simulation
-        X_real = ControlSimulationSwivelAHRS(cdpr_v,cdpr_p,Z_ideal, ...
-            position__control_bias(disturb_idx), ...
+        Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
+        [X_real, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimulationSwivelAHRS( ...
+            cdpr_variables,cdpr_parameters,Z_ideal,k, ...
+            position_control_bias(disturb_idx), ...
             orientation_control_bias(disturb_idx), ...
             position_control_noise,orientation_control_noise);
+
+        % guess generation
         cdpr_variables = UpdateIKZeroOrd(Z_ideal(1:3),Z_ideal(4:6),cdpr_parameters,cdpr_variables);
         sigma_0_guess = zeros(cdpr_parameters.n_cables,1);
         for j = 1:cdpr_parameters.n_cables
@@ -123,12 +130,12 @@ for meas_idx = 1:length(k_set)
         angle_init_sol = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
         output.InitialOrientationError = rad2deg(abs(angle_init_sol-angle_init_real));
 
-        filename=strcat(folder,'/out_wo_servos_',num2str(k), ...
+        filename=strcat(folder,'/out_0orient_',num2str(k), ...
             '_',strrep(num2str(position_control_bias(delta)),'.',''), ...
             '_',strrep(num2str(position_control_noise),'.',''),...
             '_',strrep(num2str(rad2deg(orientation_control_bias(delta))),'.',''), ...
             '_',strrep(num2str(rad2deg(orientation_control_noise)),'.',''),'.mat');
-        % save(filename,"Z_ideal",'cdpr_parameters','cdpr_variables','k','output')
+        save(filename,"Z_ideal",'cdpr_parameters','cdpr_variables','k','output')
 
         disp(output);
     end
