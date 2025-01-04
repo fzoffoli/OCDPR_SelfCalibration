@@ -43,9 +43,9 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 % set parameters for optimal pose generation
 % k_set=10:10:30;
 flag_cable_lengths = 1;
-k_set=10;
-% pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
-pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
+k_set=51;
+pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
+% pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
 
 %% Optimal Configuration generation
 for i=1:length(k_set)
@@ -79,7 +79,7 @@ for i=1:length(k_set)
         opt_pose_comp_time = toc;
     end
     % store data
-    save(strcat('calib_pose_w_cables',num2str(k)),"Z_ideal",...
+    save(strcat('calib_pose_0orient_',num2str(k)),"Z_ideal",...
         'cdpr_parameters','cdpr_variables','k',"opt_pose_comp_time");
 end
 %% Initial-Pose Self-Calibration simulation
