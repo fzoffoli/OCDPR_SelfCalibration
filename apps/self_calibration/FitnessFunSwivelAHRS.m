@@ -18,10 +18,10 @@ pitch = zeros(k,1);
 switch(method)
     
     case OptimalConfigurationMethod.MIN_SINGULAR_VALUE
-        F = min(svd(J));
+        F = -min(svd(J));
     
     case OptimalConfigurationMethod.MIN_CONDITION_NUM
-        F = max(svd(J))/min(svd(J));
+        F = -min(svd(J))/max(svd(J));
     
 end
 
