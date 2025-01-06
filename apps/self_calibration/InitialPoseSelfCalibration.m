@@ -48,40 +48,42 @@ pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
 % pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
 
 %% Optimal Configuration generation
-for i=1:length(k_set)
-    k = k_set(i);
-    Z_bounds = repmat(pose_bounds,k,2);
-    method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
+% for i=1:length(k_set)
+%     k = k_set(i);
+%     Z_bounds = repmat(pose_bounds,k,2);
+%     method = OptimalConfigurationMethod.MIN_CONDITION_NUM;
+% 
+%     % generate k poses for optimal calibration
+%     Z_not_ideal = [linspace(pose_bounds(1,1),pose_bounds(1,2),k);
+%         linspace(pose_bounds(2,1),pose_bounds(2,2),k);
+%         linspace(pose_bounds(3,1),pose_bounds(3,2),k);
+%         zeros(1,k);
+%         zeros(1,k);
+%         zeros(1,k)];
+%     Z_not_ideal=reshape(Z_not_ideal,[k*cdpr_parameters.pose_dim 1]);
+% 
+%     % solve the optimal configuration problem
+%     opts_ga = optimoptions('ga','UseParallel',true);
+%     tic
+%     if ~flag_cable_lengths
+%         Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method),...
+%             k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
+%             @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
+%     else
+%         % Z_ideal = ga(@(Z)FitnessFunSwivelAHRSMotor(cdpr_variables,cdpr_parameters,Z,k,method),...
+%         %     k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
+%         %     @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
+%         Z_ideal = ga(@(Z)FitnessFunLengthSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method),...
+%             k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
+%             @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
+%         opt_pose_comp_time = toc;
+%     end
+%     % store data
+%     save(strcat('calib_pose_0orient_',num2str(k)),"Z_ideal",...
+%         'cdpr_parameters','cdpr_variables','k',"opt_pose_comp_time");
+% end
 
-    % generate k poses for optimal calibration
-    Z_not_ideal = [linspace(pose_bounds(1,1),pose_bounds(1,2),k);
-        linspace(pose_bounds(2,1),pose_bounds(2,2),k);
-        linspace(pose_bounds(3,1),pose_bounds(3,2),k);
-        zeros(1,k);
-        zeros(1,k);
-        zeros(1,k)];
-    Z_not_ideal=reshape(Z_not_ideal,[k*cdpr_parameters.pose_dim 1]);
-    
-    % solve the optimal configuration problem
-    opts_ga = optimoptions('ga','UseParallel',true);
-    tic
-    if ~flag_cable_lengths
-        Z_ideal = ga(@(Z)FitnessFunSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method),...
-            k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
-            @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
-    else
-        % Z_ideal = ga(@(Z)FitnessFunSwivelAHRSMotor(cdpr_variables,cdpr_parameters,Z,k,method),...
-        %     k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
-        %     @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
-        Z_ideal = ga(@(Z)FitnessFunLengthSwivelAHRS(cdpr_variables,cdpr_parameters,Z,k,method),...
-            k*cdpr_parameters.pose_dim,[],[],[],[],Z_bounds(:,1),Z_bounds(:,2),...
-            @(Z)NonlconWorkspaceBelonging(cdpr_variables,cdpr_parameters,Z,k,ws_info),opts_ga);
-        opt_pose_comp_time = toc;
-    end
-    % store data
-    save(strcat('calib_pose_0orient_',num2str(k)),"Z_ideal",...
-        'cdpr_parameters','cdpr_variables','k',"opt_pose_comp_time");
-end
+[Z_ideal,k] = GenerateConfigPosesBrutal(ws_info,pose_bounds);
 %% Initial-Pose Self-Calibration simulation
 for meas_idx = 1:length(k_set)
     % load measure set
