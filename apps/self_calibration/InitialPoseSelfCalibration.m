@@ -30,7 +30,7 @@ folder = '../../data';
 
 % load robot parameters
 [cdpr_parameters, cdpr_variables, cdpr_ws_data ,cdpr_outputs,record,utilities] = ...
- LoadConfigAndInit("IRMA8_platform_prot","IRMA8_platform_prot");
+ LoadConfigAndInit("IRMA8_diff_pulleys","IRMA8_diff_pulleys");
  ws_info = LoadWsInfo("8_cable_info");
 
 % graphical visualization
@@ -42,8 +42,8 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 
 % set parameters for optimal pose generation
 % k_set=10:10:30;
-flag_cable_lengths = 1;
-k_set=51;
+flag_cable_lengths = 0;
+k_set=30;
 pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
 % pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
 
@@ -88,7 +88,7 @@ pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
 for meas_idx = 1:length(k_set)
     % load measure set
     k = k_set(meas_idx);
-    load(strcat('calib_pose_0orient_',num2str(k),'.mat'))
+    load(strcat('calib_pose_wo_servos_',num2str(k),'.mat'))
     
     % assign disturb values
     disturb_mesh = 5;
@@ -114,17 +114,18 @@ for meas_idx = 1:length(k_set)
                 sigma_0_guess(j) = cdpr_variables.cable(j).swivel_ang;
             end
             X_guess = [Z_ideal;sigma_0_guess;Z_ideal(6)];
+            %%% THOSE BOUNDS ARE WRONG
             X_lb = [repmat([-2.4;-0.3;-1.7;-pi;-pi;-pi],k,1); -pi*ones(...
                 cdpr_parameters.n_cables+1,1)];
             X_ub = [repmat([2.4;0.3;1.7;pi;pi;pi],k,1); pi*ones(...
                 cdpr_parameters.n_cables+1,1)];
 
             % solve self-calibration problem
-            opts = optimoptions('lsqnonlin','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
+            opts = optimoptions('lsqnonlin','FunctionTolerance',1e-12,'OptimalityTolerance',1e-8, ...
                 'StepTolerance',1e-8,'UseParallel',true);
             tic
             X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-                k,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,X_lb,X_ub,[],[],[],[],[],...
+                k,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
                 opts);
             self_calib_comp_time=toc;
         else
@@ -144,6 +145,7 @@ for meas_idx = 1:length(k_set)
                 sigma_0_guess(j) = cdpr_variables.cable(j).swivel_ang;
             end
             X_guess = [Z_ideal;length_0_guess;sigma_0_guess;Z_ideal(6)];
+            % those bounds are wrong!!!!!!!!!!! TODO find the problem
             X_lb = [repmat([-2.4;-0.3;-1.7;-pi;-pi;-pi],k,1); -pi*ones(...
                 2*cdpr_parameters.n_cables+1,1)];
             X_ub = [repmat([2.4;0.3;1.7;pi;pi;pi],k,1); pi*ones(...
@@ -151,11 +153,22 @@ for meas_idx = 1:length(k_set)
 
             % solve self-calibration problem
             opts = optimoptions('lsqnonlin','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
-                'StepTolerance',1e-8,'UseParallel',true);
+                'StepTolerance',1e-10,'UseParallel',true);
+            % opts = optimoptions('fmincon','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
+            %     'StepTolerance',1e-8,'UseParallel',true);
             tic
+            % X_sol = lsqnonlin(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+            %     k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,X_lb,X_ub,[],[],[],[],[],...
+            %     opts);
+            % X_sol = lsqnonlin(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+            %     k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_real,X_lb,X_ub,[],[],[],[],[],...
+            %     opts);
             X_sol = lsqnonlin(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-                k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,X_lb,X_ub,[],[],[],[],[],...
+                k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
                 opts);
+            % X_sol = fmincon(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+            %     k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],X_lb,X_ub,...
+            %     [],opts);
             self_calib_comp_time=toc;
         end
 
