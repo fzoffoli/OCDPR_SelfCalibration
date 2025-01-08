@@ -91,106 +91,99 @@ for meas_idx = 1:length(k_set)
     load(strcat('calib_pose_wo_servos_',num2str(k),'.mat'))
     
     % assign disturb values
-    disturb_mesh = 5;
-    position_control_bias = linspace(0.0,0.040,disturb_mesh);          %[m]
-    orientation_control_bias = linspace(0,deg2rad(3),disturb_mesh);    %[rad]
-    position_control_noise = 0.002;           %[m]
-    orientation_control_noise = deg2rad(1);   %[rad]
-    for disturb_idx=1:length(position_control_bias)
-
-        % control disturb simulation
-        if ~flag_cable_lengths
-            Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
-            [X_real, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimulationSwivelAHRS( ...
-                cdpr_variables,cdpr_parameters,Z_ideal,k, ...
-                position_control_bias(disturb_idx), ...
-                orientation_control_bias(disturb_idx), ...
-                position_control_noise,orientation_control_noise);
-
-            % guess generation
-            cdpr_variables = UpdateIKZeroOrd(Z_ideal(1:3),Z_ideal(4:6),cdpr_parameters,cdpr_variables);
-            sigma_0_guess = zeros(cdpr_parameters.n_cables,1);
-            for j = 1:cdpr_parameters.n_cables
-                sigma_0_guess(j) = cdpr_variables.cable(j).swivel_ang;
-            end
-            X_guess = [Z_ideal;sigma_0_guess;Z_ideal(6)];
-            %%% THOSE BOUNDS ARE WRONG
-            X_lb = [repmat([-2.4;-0.3;-1.7;-pi;-pi;-pi],k,1); -pi*ones(...
-                cdpr_parameters.n_cables+1,1)];
-            X_ub = [repmat([2.4;0.3;1.7;pi;pi;pi],k,1); pi*ones(...
-                cdpr_parameters.n_cables+1,1)];
-
-            % solve self-calibration problem
-            opts = optimoptions('lsqnonlin','FunctionTolerance',1e-12,'OptimalityTolerance',1e-8, ...
-                'StepTolerance',1e-8,'UseParallel',true);
-            tic
-            X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-                k,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
-                opts);
-            self_calib_comp_time=toc;
-        else
-            Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
-            [X_real, delta_length_meas, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimLengthSwivelAHRS( ...
-                cdpr_variables,cdpr_parameters,Z_ideal,k, ...
-                position_control_bias(disturb_idx), ...
-                orientation_control_bias(disturb_idx), ...
-                position_control_noise,orientation_control_noise);
-
-            % guess generation
-            cdpr_variables = UpdateIKZeroOrd(Z_ideal(1:3),Z_ideal(4:6),cdpr_parameters,cdpr_variables);
-            length_0_guess = zeros(cdpr_parameters.n_cables,1);
-            sigma_0_guess = zeros(cdpr_parameters.n_cables,1);
-            for j = 1:cdpr_parameters.n_cables
-                length_0_guess(j) = cdpr_variables.cable(j).complete_length;
-                sigma_0_guess(j) = cdpr_variables.cable(j).swivel_ang;
-            end
-            X_guess = [Z_ideal;length_0_guess;sigma_0_guess;Z_ideal(6)];
-            % those bounds are wrong!!!!!!!!!!! TODO find the problem
-            X_lb = [repmat([-2.4;-0.3;-1.7;-pi;-pi;-pi],k,1); -pi*ones(...
-                2*cdpr_parameters.n_cables+1,1)];
-            X_ub = [repmat([2.4;0.3;1.7;pi;pi;pi],k,1); pi*ones(...
-                2*cdpr_parameters.n_cables+1,1)];
-
-            % solve self-calibration problem
-            opts = optimoptions('lsqnonlin','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
-                'StepTolerance',1e-10,'UseParallel',true);
-            % opts = optimoptions('fmincon','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
-            %     'StepTolerance',1e-8,'UseParallel',true);
-            tic
-            % X_sol = lsqnonlin(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-            %     k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,X_lb,X_ub,[],[],[],[],[],...
-            %     opts);
-            % X_sol = lsqnonlin(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-            %     k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_real,X_lb,X_ub,[],[],[],[],[],...
-            %     opts);
-            X_sol = lsqnonlin(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-                k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
-                opts);
-            % X_sol = fmincon(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-            %     k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],X_lb,X_ub,...
-            %     [],opts);
-            self_calib_comp_time=toc;
+    control_disturb.position_bias = 0;              %[m]
+    control_disturb.orientation_bias = 0;           %[rad]
+    control_disturb.position_noise = 0.02;          %[m]
+    control_disturb.orientation_noise = deg2rad(3); %[rad]
+    sensor_disturb.swivel_noise = deg2rad(0.03);    %[rad]
+    sensor_disturb.length_noise = deg2rad(2);       %[m]
+    sensor_disturb.AHRS_noise = deg2rad(1);         %[rad]
+    sensor_disturb.loadcell_noise = 2;              %[N]
+    % IK simulation
+    if ~flag_cable_lengths
+        Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
+        [X_real, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimulationSwivelAHRS( ...
+            cdpr_variables,cdpr_parameters,Z_ideal,k, ...
+            control_disturb,sensor_disturb);
+        
+        % guess generation
+        cdpr_variables = UpdateIKZeroOrd(Z_ideal(1:3),Z_ideal(4:6),cdpr_parameters,cdpr_variables);
+        sigma_0_guess = zeros(cdpr_parameters.n_cables,1);
+        for j = 1:cdpr_parameters.n_cables
+            sigma_0_guess(j) = cdpr_variables.cable(j).swivel_ang;
         end
+        X_guess = [Z_ideal;sigma_0_guess;Z_ideal(6)];
+        %%% THOSE BOUNDS ARE WRONG, TODO: find the problem
+        X_lb = [repmat([-2.4;-0.3;-1.7;-pi;-pi;-pi],k,1); -pi*ones(...
+            cdpr_parameters.n_cables+1,1)];
+        X_ub = [repmat([2.4;0.3;1.7;pi;pi;pi],k,1); pi*ones(...
+            cdpr_parameters.n_cables+1,1)];
 
-        % store and show results
-        output.sc_comp_time = self_calib_comp_time;
-        output.X_real = X_real;
-        output.X_sol = X_sol;
-        output.InitialPositionErrorNorm = norm(X_real(1:3)-X_sol(1:3));
+        % solve self-calibration problem
+        opts = optimoptions('lsqnonlin','FunctionTolerance',1e-12,'OptimalityTolerance',1e-8, ...
+            'StepTolerance',1e-8,'UseParallel',true);
+        tic
+        X_sol = lsqnonlin(@(X)CostFunSelfCalibrationSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+            k,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
+            opts);
+        self_calib_comp_time=toc;
+    else
+        Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
+        [X_real, delta_length_meas, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimLengthSwivelAHRS( ...
+            cdpr_variables,cdpr_parameters,Z_ideal,k, ...
+            control_disturb,sensor_disturb);
 
-        cdpr_variables=UpdateIKZeroOrd(X_real(1:3),X_real(4:6),cdpr_parameters,cdpr_variables);
-        angle_init_real = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
-        cdpr_variables=UpdateIKZeroOrd(X_sol(1:3),X_sol(4:6),cdpr_parameters,cdpr_variables);
-        angle_init_sol = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
-        output.InitialOrientationError = rad2deg(abs(angle_init_sol-angle_init_real));
+        % guess generation
+        cdpr_variables = UpdateIKZeroOrd(Z_ideal(1:3),Z_ideal(4:6),cdpr_parameters,cdpr_variables);
+        length_0_guess = zeros(cdpr_parameters.n_cables,1);
+        sigma_0_guess = zeros(cdpr_parameters.n_cables,1);
+        for j = 1:cdpr_parameters.n_cables
+            length_0_guess(j) = cdpr_variables.cable(j).complete_length;
+            sigma_0_guess(j) = cdpr_variables.cable(j).swivel_ang;
+        end
+        X_guess = [Z_ideal;length_0_guess;sigma_0_guess;Z_ideal(6)];
+        % those bounds are wrong!!!!!!!!!!! TODO find the problem
+        X_lb = [repmat([-2.4;-0.3;-1.7;-pi;-pi;-pi],k,1); -pi*ones(...
+            2*cdpr_parameters.n_cables+1,1)];
+        X_ub = [repmat([2.4;0.3;1.7;pi;pi;pi],k,1); pi*ones(...
+            2*cdpr_parameters.n_cables+1,1)];
 
-        filename=strcat(folder,'/out_0orient_',num2str(k), ...
-            '_',strrep(num2str(position_control_bias(disturb_idx)),'.',''), ...
-            '_',strrep(num2str(position_control_noise),'.',''),...
-            '_',strrep(num2str(rad2deg(orientation_control_bias(disturb_idx))),'.',''), ...
-            '_',strrep(num2str(rad2deg(orientation_control_noise)),'.',''),'.mat');
-        % save(filename,"Z_ideal",'cdpr_parameters','cdpr_variables','k','output')
-
-        disp(output);
+        % solve self-calibration problem
+        opts = optimoptions('lsqnonlin','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
+            'StepTolerance',1e-10,'UseParallel',true);
+        % opts = optimoptions('fmincon','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
+        %     'StepTolerance',1e-8,'UseParallel',true);
+        tic
+        % X_sol = lsqnonlin(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+        %     k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,X_lb,X_ub,[],[],[],[],[],...
+        %     opts);
+        X_sol = lsqnonlin(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+            k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
+            opts);
+        % X_sol = fmincon(@(X)CostFunSelfCalibrationLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+        %     k,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],X_lb,X_ub,...
+        %     [],opts);
+        self_calib_comp_time=toc;
     end
+
+    % store and show results
+    output.sc_comp_time = self_calib_comp_time;
+    output.X_real = X_real;
+    output.X_sol = X_sol;
+    output.InitialPositionErrorNorm = norm(X_real(1:3)-X_sol(1:3));
+
+    cdpr_variables=UpdateIKZeroOrd(X_real(1:3),X_real(4:6),cdpr_parameters,cdpr_variables);
+    angle_init_real = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
+    cdpr_variables=UpdateIKZeroOrd(X_sol(1:3),X_sol(4:6),cdpr_parameters,cdpr_variables);
+    angle_init_sol = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
+    output.InitialOrientationError = rad2deg(abs(angle_init_sol-angle_init_real));
+
+    filename=strcat(folder,'/out_0orient_',num2str(k), ...
+        '_',strrep(num2str(position_control_bias(disturb_idx)),'.',''), ...
+        '_',strrep(num2str(position_control_noise),'.',''),...
+        '_',strrep(num2str(rad2deg(orientation_control_bias(disturb_idx))),'.',''), ...
+        '_',strrep(num2str(rad2deg(orientation_control_noise)),'.',''),'.mat');
+    % save(filename,"Z_ideal",'cdpr_parameters','cdpr_variables','k','output')
+
+    disp(output);
 end
