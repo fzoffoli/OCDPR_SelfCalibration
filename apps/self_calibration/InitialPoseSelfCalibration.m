@@ -42,7 +42,7 @@ record.SetFrame(cdpr_variables,cdpr_parameters);
 
 % set parameters for optimal pose generation
 % k_set=10:10:30;
-flag_cable_lengths = 0;
+flag_cable_lengths = 1;
 k_set=30;
 pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
 % pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
@@ -85,10 +85,10 @@ pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
 
 [Z_ideal,k] = GenerateConfigPosesBrutal(ws_info,pose_bounds);
 %% Initial-Pose Self-Calibration simulation
-for meas_idx = 1:length(k_set)
-    % load measure set
-    k = k_set(meas_idx);
-    load(strcat('calib_pose_wo_servos_',num2str(k),'.mat'))
+% for meas_idx = 1:length(k_set)
+%     % load measure set
+%     k = k_set(meas_idx);
+%     load(strcat('calib_pose_wo_servos_',num2str(k),'.mat'))
     
     % assign disturb values
     control_disturb.position_bias = 0;              %[m]
@@ -183,4 +183,4 @@ for meas_idx = 1:length(k_set)
     % % save(filename,"Z_ideal",'cdpr_parameters','cdpr_variables','k','output')
 
     disp(output);
-end
+% end
