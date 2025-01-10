@@ -13,6 +13,6 @@ for i=1:ws_info.mesh_divider
         end
     end
 end
-k = 64;
+k = length(Z);
 Z = reshape(Z,[k*6 1]);
 end
