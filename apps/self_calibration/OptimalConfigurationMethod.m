@@ -1,6 +1,6 @@
 classdef OptimalConfigurationMethod
     enumeration
-        MIN_SINGULAR_VALUE,
-        MIN_CONDITION_NUM
+        MAX_SINGULAR_VALUE,
+        MAX_CONDITION_NUM
     end
 end

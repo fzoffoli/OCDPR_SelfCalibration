@@ -12,7 +12,7 @@ if mod(ws_info.mesh_divider,2)==0
   ws_info.mesh_divider = ws_info.mesh_divider-1;
 end
 ws_info.e_mesh = (ws_info.mesh_divider-1)/2;
-orient = [0;pi/6;0];
+orient = [0;0;0];
 for z = ws_limits(3,2):(ws_limits(3,1)-ws_limits(3,2))/ws_info.mesh_divider:ws_limits(3,1)
     for y = ws_limits(2,2):(ws_limits(2,1)-ws_limits(2,2))/ws_info.mesh_divider:ws_limits(2,1)
         for x = ws_limits(1,2):(ws_limits(1,1)-ws_limits(1,2))/ws_info.mesh_divider:ws_limits(1,1)%%

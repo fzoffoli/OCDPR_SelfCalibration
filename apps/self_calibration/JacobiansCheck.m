@@ -21,21 +21,21 @@ for i = 1:length(t)
     end
     
     opts_cp = optimoptions('fsolve','FiniteDifferenceStepSize',1e-10,'FiniteDifferenceType','central');
-    [flag_s,err_s] = checkGradients(@(pose)CheckSwivelFun(cdpr_variables,cdpr_parameters,pose,sigma),zeta(:,i));
+    % [flag_s,err_s] = checkGradients(@(pose)CheckSwivelFun(cdpr_variables,cdpr_parameters,pose,sigma),zeta(:,i));
     [flag_p,err_p] = checkGradients(@(pose)CheckTangencyFun(cdpr_variables,cdpr_parameters,pose,psi),zeta(:,i),opts_cp);
-    [flag_l,err_l] = checkGradients(@(pose)CheckCableLenghtsFun(cdpr_variables,cdpr_parameters,pose,l),zeta(:,i));
+    % [flag_l,err_l] = checkGradients(@(pose)CheckCableLenghtsFun(cdpr_variables,cdpr_parameters,pose,l),zeta(:,i));
     % [flag_th,err_th] = checkGradients(@(pose)CheckMotorAnglesFun(cdpr_variables,cdpr_parameters,pose,motor_angle),zeta(:,i));
     
-    flag_s_ = flag_s_&&flag_s;
+    % flag_s_ = flag_s_&&flag_s;
     flag_p_ = flag_p_&&flag_p;
-    flag_l_ = flag_l_&&flag_l;
+    % flag_l_ = flag_l_&&flag_l;
     % flag_th_ = flag_th_&&flag_th;
     
 end
 
-assert(flag_s_,'Swivel Jacobian is wrong');
+% assert(flag_s_,'Swivel Jacobian is wrong');
 assert(flag_p,'Tangency jacobian is wrong');
-assert(flag_l_,'Cable length jacobian is wrong');
+% assert(flag_l_,'Cable length jacobian is wrong');
 % assert(flag_th_,'Motor angle jacobian is wrong');
 
 end

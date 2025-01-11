@@ -1,13 +1,13 @@
-function [Z,k] = GenerateConfigPosesBrutal(ws_info,pose_bounds)
+function [Z,k] = GenerateConfigPosesBrutal(grid_axis,pose_bounds)
 
-x = linspace(pose_bounds(1,1),pose_bounds(1,2),ws_info.mesh_divider);
-y = linspace(pose_bounds(2,1),pose_bounds(2,2),ws_info.mesh_divider);
-z = linspace(pose_bounds(3,1),pose_bounds(3,2),ws_info.mesh_divider);
+x = linspace(pose_bounds(1,1),pose_bounds(1,2),grid_axis(1));
+y = linspace(pose_bounds(2,1),pose_bounds(2,2),grid_axis(2));
+z = linspace(pose_bounds(3,1),pose_bounds(3,2),grid_axis(3));
 
 cnt = 1;
-for i=1:ws_info.mesh_divider
-    for j=1:ws_info.mesh_divider
-        for k=1:ws_info.mesh_divider
+for i=1:grid_axis(1)
+    for j=1:grid_axis(2)
+        for k=1:grid_axis(3)
             Z(:,cnt) = [x(i);y(j);z(k);zeros(3,1)];
             cnt = cnt+1;
         end

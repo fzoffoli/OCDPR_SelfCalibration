@@ -19,7 +19,7 @@ folder = '../../data';
 
 %%% choose the desired robot
 [cdpr_parameters, cdpr_variables, cdpr_ws_data ,cdpr_outputs,record,utilities] = ...
- LoadConfigAndInit("IRMA8_platform_prot","IRMA8_platform_prot");
+ LoadConfigAndInit("IRMA8_diff_pulleys","IRMA8_diff_pulleys");
 cdpr_variables = UpdateIKZeroOrd([1.78352; 0.197381; -1.28125],...
   [0;0;0],cdpr_parameters,cdpr_variables);
 record.SetFrame(cdpr_variables,cdpr_parameters);%
