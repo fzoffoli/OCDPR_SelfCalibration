@@ -50,7 +50,7 @@ pose_bounds = [-1.2 1.2; -0.2 0.2; -1.6 0.8; 0 0; 0 0; 0 0];  %0 orient
 % pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
 
 % assign disturb values
-N = 2;
+N = 10;
 control_disturb.position_bias = 0;                                      %[m]
 control_disturb.orientation_bias = 0;                                   %[rad]
 control_disturb.position_noise = 0;                                     %[m]

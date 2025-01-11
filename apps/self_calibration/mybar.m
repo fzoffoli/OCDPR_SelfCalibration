@@ -1,4 +1,4 @@
-function [theta_m,J_theta] = bar(cable_p,l)
+function [theta_m,J_theta] = mybar(cable_p,l)
 
 fun = @(theta_motor)l-foo(cable_p,theta_motor);
 theta_m = fsolve(fun,0);
