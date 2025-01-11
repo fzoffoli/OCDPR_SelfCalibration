@@ -1,4 +1,4 @@
-function [X_real, loadcell_meas, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimShortLoadcellSwivelAHRS(cdpr_v,cdpr_p,Z_ideal,k,control_disturb,sensor_disturb)
+function [X_real, loadcell_meas, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimShortLoadcellSwivelAHRS(cdpr_v,cdpr_p,Z_ideal,k,control_disturb,loadcell_noise,swivel_noise,AHRS_noise)
 
 % add control disturbances
 pose_bias = repmat([control_disturb.position_bias*ones(3,1);...
@@ -60,9 +60,9 @@ theta_opt_meas(1) = [];
 X_real = Z_real;
 
 % add measurement disturbances
-loadcell_meas = sensor_disturb.loadcell_noise*ones(size(loadcell_opt_meas))+loadcell_opt_meas;
-delta_sigma_meas = sensor_disturb.swivel_noise*ones(size(delta_sigma_opt_meas))+delta_sigma_opt_meas;
-delta_psi_meas = sensor_disturb.AHRS_noise*ones(size(delta_psi_opt_meas))+delta_psi_opt_meas;
-phi_meas = sensor_disturb.AHRS_noise*(ones(size(phi_opt_meas)))+phi_opt_meas;
-theta_meas = sensor_disturb.AHRS_noise*(ones(size(theta_opt_meas)))+theta_opt_meas;
+loadcell_meas = loadcell_noise*ones(size(loadcell_opt_meas))+loadcell_opt_meas;
+delta_sigma_meas = swivel_noise*ones(size(delta_sigma_opt_meas))+delta_sigma_opt_meas;
+delta_psi_meas = AHRS_noise*ones(size(delta_psi_opt_meas))+delta_psi_opt_meas;
+phi_meas = AHRS_noise*(ones(size(phi_opt_meas)))+phi_opt_meas;
+theta_meas = AHRS_noise*(ones(size(theta_opt_meas)))+theta_opt_meas;
 end
