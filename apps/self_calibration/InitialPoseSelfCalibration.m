@@ -93,17 +93,17 @@ pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; 0 0; 0 0; 0 0];  %0 orient
     % assign disturb values
     control_disturb.position_bias = 0;              %[m]
     control_disturb.orientation_bias = 0;           %[rad]
-    control_disturb.position_noise = 0.02;          %[m]
-    control_disturb.orientation_noise = deg2rad(3); %[rad]
-    % sensor_disturb.swivel_noise = deg2rad(0.03);    %[rad]
-    % sensor_disturb.length_noise = 0.02;             %[m]
-    % sensor_disturb.AHRS_noise = deg2rad(1);         %[rad]
-    % sensor_disturb.loadcell_noise = 2;              %[N]
-    control_disturb.orientation_noise = 0;          %[rad]
-    sensor_disturb.swivel_noise = 0;                %[rad]
-    sensor_disturb.length_noise = 0;                %[m]
-    sensor_disturb.AHRS_noise = 0;                  %[rad]
-    sensor_disturb.loadcell_noise = 0;              %[N]
+    control_disturb.position_noise = 0;          %[m]
+    control_disturb.orientation_noise = deg2rad(0); %[rad]
+    sensor_disturb.swivel_noise = deg2rad(0.0);    %[rad]
+    sensor_disturb.length_noise = 0.02;             %[m]
+    sensor_disturb.AHRS_noise = deg2rad(1);         %[rad]
+    sensor_disturb.loadcell_noise = 2;              %[N]
+    % control_disturb.orientation_noise = 0;          %[rad]
+    % sensor_disturb.swivel_noise = 0;                %[rad]
+    % sensor_disturb.length_noise = 0;                %[m]
+    % sensor_disturb.AHRS_noise = 0;                  %[rad]
+    % sensor_disturb.loadcell_noise = 0;              %[N]
     % IK simulation
     if ~flag_cable_lengths
         Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
