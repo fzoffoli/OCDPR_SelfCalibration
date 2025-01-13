@@ -50,7 +50,7 @@ pose_bounds = [-1.2 1.2; -0.2 0.2; -1.6 0.8; 0 0; 0 0; 0 0];  %0 orient
 % pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
 
 % assign disturb values
-N = 10;
+N = 2;
 control_disturb.position_bias = 0;                                      %[m]
 control_disturb.orientation_bias = 0;                                   %[rad]
 control_disturb.position_noise = 0;                                     %[m]
@@ -133,7 +133,8 @@ for meas_idx = 1:length(axis_grid_points)
                 angle_init_real = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
                 cdpr_variables=UpdateIKZeroOrd(X_sol(1:3),X_sol(4:6),cdpr_parameters,cdpr_variables);
                 angle_init_sol = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
-                InitialOrientationError(cnt) = rad2deg(abs(angle_init_sol-angle_init_real));
+                InitialOrientationError(cnt) = rad2deg(abs(angle_init_sol-angle_init_real));            
+                cnt = cnt+1;
             end
         end
     end
@@ -171,6 +172,8 @@ for meas_idx = 1:length(axis_grid_points)
                 cdpr_variables=UpdateIKZeroOrd(X_sol(1:3),X_sol(4:6),cdpr_parameters,cdpr_variables);
                 angle_init_sol = acos((cdpr_variables.platform.rot_mat(1,1)+cdpr_variables.platform.rot_mat(2,2)+cdpr_variables.platform.rot_mat(3,3)-1)/2);
                 InitialOrientationError(cnt) = rad2deg(abs(angle_init_sol-angle_init_real));
+
+                cnt = cnt+1;
             end
         end
     end
@@ -185,7 +188,7 @@ filename=strcat(folder,'/out_0orient',...
     '_',num2str(rad2deg(max(sensor_disturb.swivel_noise))),...
     '_',num2str(max(sensor_disturb.loadcell_noise)), ...
     '_',num2str(rad2deg(max(sensor_disturb.AHRS_noise))),'.mat');
-save(filename,'sc_output')
+% save(filename,'sc_output')
 %% Show results
 
 PlotInitialPoseErrors(sc_output);

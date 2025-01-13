@@ -15,12 +15,16 @@ end
 
 figure()
 bar(k,eps_p)
-legend('Swivel AHRS','Lenght Swivel AHRS','Loadcell Swivel AHRS')
+xlabel('number of poses');
+ylabel('[m]')
+legend('$\sigma$, $\varepsilon$','$l$, $\sigma$, $\varepsilon$','$\tau$, $\sigma$, $\varepsilon$','Interpreter','Latex')
 title('Position error norm')
 
 figure()
 bar(k,eps_r)
-legend('Swivel AHRS','Lenght Swivel AHRS','Loadcell Swivel AHRS')
+xlabel('number of poses');
+ylabel('[deg]')
+legend('$\sigma$, $\varepsilon$','$l$, $\sigma$, $\varepsilon$','$\tau$, $\sigma$, $\varepsilon$','Interpreter','Latex')
 title('Orientation error norm')
 
 end
