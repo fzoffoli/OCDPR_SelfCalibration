@@ -35,11 +35,7 @@ psi_0 = 0;
 for i = 1:k
     zeta_i = Z_real(6*i-5:6*i);
     cdpr_v = UpdateIKZeroOrd(zeta_i(1:3),zeta_i(4:6),cdpr_p,cdpr_v);
-    cdpr_v = CalcExternalLoads(cdpr_v,cdpr_p);
-    J_d = cdpr_v.geometric_jacobian_l(:,1:6);
-    J_c = cdpr_v.geometric_jacobian_l(:,7:8);
-    w = cdpr_v.platform.ext_load;
-    [tau_c, tau_d] = CalcTDBarycentric(cdpr_v,cdpr_p,J_d,J_c,w,[10 500]);
+    [tau_c, tau_d] = CalcTDBarycentric(cdpr_v,cdpr_p,[10 500]);
     % delta length and swivel IK simulation
     for j = 1:cdpr_p.n_cables
         if i==1

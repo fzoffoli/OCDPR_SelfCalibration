@@ -1,5 +1,10 @@
-function [tau_c, tau_d] = CalcTDBarycentric(cdpr_v,cdpr_p,Jd,Jc,w,tension_bounds)
+function [tau_c, tau_d] = CalcTDBarycentric(cdpr_v,cdpr_p,tension_bounds)
 %This tension distribution algorithm was designed based on "Gouttefarde2015"
+
+cdpr_v = CalcExternalLoads(cdpr_v,cdpr_p);
+Jd = cdpr_v.geometric_jacobian_l(:,1:6);
+Jc = cdpr_v.geometric_jacobian_l(:,7:8);
+w = cdpr_v.platform.ext_load;
 
 Im=[1,2,3,4,5,6,7,8];
 

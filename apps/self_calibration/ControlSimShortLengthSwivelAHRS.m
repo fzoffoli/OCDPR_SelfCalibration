@@ -46,6 +46,7 @@ for i = 1:k
             delta_length_meas(j,i) = delta_length_opt_meas(j,i)+(2*rand-1)*length_noise;
             delta_sigma_meas(j,i) = delta_sigma_opt_meas(j,i)+(2*rand-1)*swivel_noise;
         else
+            delta_length_opt_meas(j,i) = cdpr_v.cable(j).complete_length-length_0(j);
             delta_length_meas(j,i) = delta_length_opt_meas(j,i)+(2*rand-1)*length_noise;
             delta_sigma_opt_meas(j,i) = cdpr_v.cable(j).swivel_ang-sigma_0(j);
             delta_sigma_meas(j,i) = delta_sigma_opt_meas(j,i)+(2*rand-1)*swivel_noise;
