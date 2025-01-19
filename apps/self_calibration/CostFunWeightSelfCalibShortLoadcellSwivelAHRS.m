@@ -5,7 +5,7 @@ function f = CostFunWeightSelfCalibShortLoadcellSwivelAHRS(cdpr_v,cdpr_p,X,k,tau
 % Read Zoffoli2025 CableCon for the complete formulation.
 
 % set constants for the weighing matrix
-tau_max = 6;
+tau_max = 500;
 sigma_max = 2*pi;
 epsilon_max = pi/2;
 
