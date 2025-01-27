@@ -65,6 +65,8 @@ for i = 1:k
     % roll and pitch IK simulation
     phi_opt_meas(i) = cdpr_v.platform.pose(4);
     theta_opt_meas(i) = cdpr_v.platform.pose(5);
+    phi_meas(i) = phi_opt_meas(i)+(2*rand-1)*AHRS_noise;
+    theta_meas(i) = theta_opt_meas(i)+(2*rand-1)*AHRS_noise;
 end
 
 loadcell_meas(:,1) = [];
