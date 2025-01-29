@@ -35,7 +35,8 @@ psi_0 = 0;
 for i = 1:k
     zeta_i = Z_real(6*i-5:6*i);
     cdpr_v = UpdateIKZeroOrd(zeta_i(1:3),zeta_i(4:6),cdpr_p,cdpr_v);
-    [tau_c, tau_d] = CalcTDBarycentric(cdpr_v,cdpr_p,[10 500]);
+    % [tau_c, tau_d] = CalcTDBarycentric(cdpr_v,cdpr_p,[10 500]);
+    tau = CalcTDClosedForm(cdpr_v,cdpr_p,[10 500]);
     % delta length and swivel IK simulation
     for j = 1:cdpr_p.n_cables
         if i==1
@@ -58,7 +59,8 @@ for i = 1:k
     else
         delta_psi_opt_meas(i) = cdpr_v.platform.pose(6)-psi_0;
         delta_psi_meas(i) = delta_psi_opt_meas(i)+(2*rand-1)*AHRS_noise;
-        loadcell_opt_meas(:,i) = [tau_d; tau_c];
+        % loadcell_opt_meas(:,i) = [tau_d; tau_c];
+        loadcell_opt_meas(:,i) = tau;
         loadcell_meas(:,i) = loadcell_opt_meas(:,i)+(2*rand(cdpr_p.n_cables,1) ...
             -ones(cdpr_p.n_cables,1))*loadcell_noise;
     end

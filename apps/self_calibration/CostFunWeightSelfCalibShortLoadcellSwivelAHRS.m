@@ -6,7 +6,7 @@ function f = CostFunWeightSelfCalibShortLoadcellSwivelAHRS(cdpr_v,cdpr_p,X,k,tau
 
 % set constants for the weighing matrix
 % tau_max = 500;
-force_max = 500;
+force_max = 300;
 moment_max = force_max*norm(cdpr_p.cable(2).pos_PD_loc);
 sigma_max = 2*pi;
 epsilon_max = pi/2;
@@ -38,14 +38,19 @@ for i=1:k
     end
     % [tau_c, tau_d] = CalcTDBarycentric(cdpr_v,cdpr_p,[10 500]);
     % f_tau(i*n-(n-1):i*n) = [tau_d;tau_c]-tau(:,i); 
-    wrench = cdpr_v.geometric_jacobian_l*tau(:,i)-cdpr_v.platform.ext_load; 
-    f_tau(i*6-(6-1):i*6) = [wrench(1:3)./force_max; wrench(4:6)./moment_max];
+    % wrench = cdpr_v.geometric_jacobian_l*tau(:,i)-cdpr_v.platform.ext_load; 
+    % f_tau(i*6-(6-1):i*6) = [wrench(1:3)./force_max; wrench(4:6)./moment_max];
+    tau_zeta = CalcTDClosedForm(cdpr_v,cdpr_p,[10 500]);
+    f_tau(i*n-(n-1):i*n) = (tau_zeta-tau(:,i))./force_max; 
     f_sigma(i*n-(n-1):i*n) = (sigma_model-sigma_0-delta_sigma(:,i))./sigma_max;
     f_epsilon(i*3-2:i*3) = (zeta_k(4:6)-[roll(i);pitch(i);delta_yaw(i)]-[0;0;psi_0])./epsilon_max;
 end
 F = [f_tau; f_sigma; f_epsilon];
-W = diag([repmat([1/(force_max^2); 1/(force_max^2); 1/(force_max^2); ...
-                    1/(moment_max^2); 1/(moment_max^2); 1/(moment_max^2)],[k 1]); ...
+% W = diag([repmat([1/(force_max^2); 1/(force_max^2); 1/(force_max^2); ...
+%                     1/(moment_max^2); 1/(moment_max^2); 1/(moment_max^2)],[k 1]); ...
+%             ones(size(f_sigma))./(sigma_max^2); ...
+%             ones(size(f_epsilon))./(epsilon_max^2)]);
+W = diag([ones(size(f_tau))./(force_max^2); ...
             ones(size(f_sigma))./(sigma_max^2); ...
             ones(size(f_epsilon))./(epsilon_max^2)]);
 f = 0.5*F'*W*F;

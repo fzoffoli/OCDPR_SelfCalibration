@@ -15,8 +15,8 @@ Z = X(cdpr_p.pose_dim+1:cdpr_p.pose_dim*(k+1));
 cdpr_v = UpdateIKZeroOrd(zeta_0(1:3),zeta_0(4:6),cdpr_p,cdpr_v);
 length_0 = cdpr_v.cable_vector;
 sigma_0 = zeros(cdpr_p.n_cables,1);
-for j=1:cdpr_p.n_cables
-    sigma_0(j) = cdpr_v.cable(j).swivel_ang;
+for j_=1:cdpr_p.n_cables
+    sigma_0(j_) = cdpr_v.cable(j_).swivel_ang;
 end
 psi_0 = zeta_0(end);
 
@@ -32,9 +32,9 @@ for i=1:k
     cdpr_v = UpdateIKZeroOrd(zeta_k(1:3),zeta_k(4:6),cdpr_p,cdpr_v);
     length_model = zeros(n,1);
     sigma_model=zeros(n,1);
-    for j=1:n
-        length_model(j) = cdpr_v.cable(j).complete_length;
-        sigma_model(j) = cdpr_v.cable(j).swivel_ang;
+    for j_=1:n
+        length_model(j_) = cdpr_v.cable(j_).complete_length;
+        sigma_model(j_) = cdpr_v.cable(j_).swivel_ang;
     end
     % length_model = cdpr_v.cable_vector;
     f_length(i*n-(n-1):i*n) = (length_model-length_0-delta_length(:,i))./length_max; 

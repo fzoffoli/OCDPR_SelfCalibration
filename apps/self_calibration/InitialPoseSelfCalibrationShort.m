@@ -50,7 +50,7 @@ pose_bounds = [-1.2 1.2; -0.2 0.2; -1.6 0.8; 0 0; 0 0; 0 0];  %0 orient
 % pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
 
 % assign disturb values
-N = 10;
+N = 50;
 control_disturb.position_bias = 0;                                      %[m]
 control_disturb.orientation_bias = 0;                                   %[rad]
 control_disturb.position_noise = 0;                                     %[m]
@@ -76,13 +76,21 @@ for meas_idx = 1:length(axis_grid_points)
     %     % guess generation
     %     X_guess = Z_ideal;
     % 
+    %     % % solve self-calibration problem
+    %     % opts = optimoptions('lsqnonlin','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
+    %     %     'StepTolerance',1e-10,'UseParallel',true,'MaxFunctionEvaluations',1e+5,'MaxIterations',1e+5);
+    %     % tic
+    %     % X_sol = lsqnonlin(@(X)CostFunSelfCalibShortSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+    %     %     k-1,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
+    %     %     opts);
+    %     % self_calib_comp_time=toc;
+    % 
     %     % solve self-calibration problem
-    %     opts = optimoptions('lsqnonlin','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
+    %     opts = optimoptions('fmincon','SpecifyObjectiveGradient',true,'FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
     %         'StepTolerance',1e-10,'UseParallel',true,'MaxFunctionEvaluations',1e+5,'MaxIterations',1e+5);
     %     tic
-    %     X_sol = lsqnonlin(@(X)CostFunSelfCalibShortSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-    %         k-1,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],...
-    %         opts);
+    %     X_sol = fmincon(@(X)CostFunWeightSelfCalibShortSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+    %         k-1,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],opts);
     %     self_calib_comp_time=toc;
     % 
     %     InitialPositionErrorNorm(disturb_idx) = norm(X_real(1:3)-X_sol(1:3));
@@ -120,11 +128,11 @@ for meas_idx = 1:length(axis_grid_points)
     %     %     opts);
     %     % self_calib_comp_time=toc;
     %     % solve self-calibration problem
-    %     opts = optimoptions('fminunc','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
+    %     opts = optimoptions('fmincon','SpecifyObjectiveGradient',true,'FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
     %         'StepTolerance',1e-10,'UseParallel',true,'MaxFunctionEvaluations',1e+6,'MaxIterations',1e+6);
     %     tic
-    %     X_sol = fminunc(@(X)CostFunWeightSelfCalibShortLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-    %         k-1,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,opts);
+    %     X_sol = fmincon(@(X)CostFunWeightSelfCalibShortLengthSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+    %         k-1,delta_length_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],opts);
     %     self_calib_comp_time=toc;
     % 
     % 
@@ -144,7 +152,7 @@ for meas_idx = 1:length(axis_grid_points)
     % sc_output(2,meas_idx).InitOrientErr_max = max(InitialOrientationError);
     % sc_output(2,meas_idx).NumberOfMeasures = k;
 
-    %-------------SWIVEL AHRS LOADCELL sensor set--------------------------cnt = 1;
+    %-------------SWIVEL AHRS LOADCELL sensor set--------------------------
     for disturb_idx = 1:N
         % IK simulation
         [X_real, loadcell_meas, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimShortLoadcellSwivelAHRS( ...
@@ -172,11 +180,11 @@ for meas_idx = 1:length(axis_grid_points)
         % self_calib_comp_time=toc;
 
         % solve self-calibration problem
-        opts = optimoptions('fminunc','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
+        opts = optimoptions('fmincon','FunctionTolerance',1e-10,'OptimalityTolerance',1e-8, ...
             'StepTolerance',1e-10,'UseParallel',true,'MaxFunctionEvaluations',1e+5,'MaxIterations',1e+5);
         tic
-        X_sol = fminunc(@(X)CostFunWeightSelfCalibShortLoadcellSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
-            k-1,loadcell_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,opts);
+        X_sol = fmincon(@(X)CostFunWeightSelfCalibShortLoadcellSwivelAHRS(cdpr_variables,cdpr_parameters,X,...
+            k-1,loadcell_meas,delta_sigma_meas,phi_meas,theta_meas,delta_psi_meas),X_guess,[],[],[],[],[],[],[],opts);
         self_calib_comp_time=toc;
 
 
@@ -202,8 +210,8 @@ end
 %     '_',num2str(rad2deg(max(sensor_disturb.swivel_noise))),...
 %     '_',num2str(max(sensor_disturb.loadcell_noise)), ...
 %     '_',num2str(rad2deg(max(sensor_disturb.AHRS_noise))),'.mat');
-filename = strcat(folder,"/out_0orient","LoadcellSwivelAHRS");
+filename = strcat(folder,"/out_0orient","_combined_low_disturb");
 save(filename,'sc_output')
 %% Show results
 
-% PlotInitialPoseErrors(sc_output);
+PlotInitialPoseErrors(sc_output);
