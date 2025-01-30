@@ -55,10 +55,14 @@ control_disturb.position_bias = 0;                                      %[m]
 control_disturb.orientation_bias = 0;                                   %[rad]
 control_disturb.position_noise = 0;                                     %[m]
 control_disturb.orientation_noise = 0;                                  %[rad]
-sensor_disturb.swivel_noise = deg2rad(3);                               %[rad]
-sensor_disturb.length_noise = 0.04;                                     %[m]
-sensor_disturb.AHRS_noise = deg2rad(5);                                 %[rad]
-sensor_disturb.loadcell_noise = 5;                                      %[N]
+% sensor_disturb.swivel_noise = deg2rad(3);                               %[rad]
+% sensor_disturb.length_noise = 0.04;                                     %[m]
+% sensor_disturb.AHRS_noise = deg2rad(5);                                 %[rad]
+% sensor_disturb.loadcell_noise = 5;                                      %[N]
+sensor_disturb.swivel_noise = deg2rad(1);                               %[rad]
+sensor_disturb.length_noise = 0.01;                                     %[m]
+sensor_disturb.AHRS_noise = deg2rad(1);                                 %[rad]
+sensor_disturb.loadcell_noise = 2;                                      %[N]
 
 %% Initial-Pose Self-Calibration simulation
 
