@@ -37,9 +37,9 @@ for i=1:k
         sigma_model(j_) = cdpr_v.cable(j_).swivel_ang;
     end
     % length_model = cdpr_v.cable_vector;
-    f_length(i*n-(n-1):i*n) = (length_model-length_0-delta_length(:,i))./length_max; 
-    f_sigma(i*n-(n-1):i*n) = (sigma_model-sigma_0-delta_sigma(:,i))./sigma_max;
-    f_epsilon(i*3-2:i*3) = (zeta_k(4:6)-[roll(i);pitch(i);delta_yaw(i)]-[0;0;psi_0])./epsilon_max;
+    f_length(i*n-(n-1):i*n) = length_model-length_0-delta_length(:,i); 
+    f_sigma(i*n-(n-1):i*n) = sigma_model-sigma_0-delta_sigma(:,i);
+    f_epsilon(i*3-2:i*3) = zeta_k(4:6)-[roll(i);pitch(i);delta_yaw(i)]-[0;0;psi_0];
     J_length(:,:,i) = cdpr_v.analitic_jacobian_l';
     J_sigma(:,:,i) = cdpr_v.analitic_jacobian_s';
 end
@@ -58,11 +58,11 @@ if nargout>1
     J_zeta = zeros((2*n+3)*k,cdpr_p.pose_dim*k);
     J_epsilon = [zeros(3) eye(3)];
     for i = 1:k
-        J_zeta(i*n-(n-1):i*n,i*6-5:i*6) = J_length(:,:,i)./length_max;
-        J_zeta(k*n+i*n-(n-1):k*n+i*n,i*6-5:i*6) = J_sigma(:,:,i)./sigma_max;
-        J_zeta(k*2*n+3*i-2:k*2*n+3*i,i*6-5:i*6) = J_epsilon./epsilon_max;
+        J_zeta(i*n-(n-1):i*n,i*6-5:i*6) = J_length(:,:,i);
+        J_zeta(k*n+i*n-(n-1):k*n+i*n,i*6-5:i*6) = J_sigma(:,:,i);
+        J_zeta(k*2*n+3*i-2:k*2*n+3*i,i*6-5:i*6) = J_epsilon;
     end
-    J_zeta_0 = [J_length_0./length_max;J_sigma_0./sigma_max;J_psi_0./epsilon_max];
+    J_zeta_0 = [J_length_0;J_sigma_0;J_psi_0];
 
     J = [J_zeta_0 J_zeta];
     j = F'*W*J;

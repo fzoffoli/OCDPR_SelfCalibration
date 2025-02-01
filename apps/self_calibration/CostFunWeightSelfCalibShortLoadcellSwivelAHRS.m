@@ -41,9 +41,9 @@ for i=1:k
     % wrench = cdpr_v.geometric_jacobian_l*tau(:,i)-cdpr_v.platform.ext_load; 
     % f_tau(i*6-(6-1):i*6) = [wrench(1:3)./force_max; wrench(4:6)./moment_max];
     tau_zeta = CalcTDClosedForm(cdpr_v,cdpr_p,[10 500]);
-    f_tau(i*n-(n-1):i*n) = (tau_zeta-tau(:,i))./force_max; 
-    f_sigma(i*n-(n-1):i*n) = (sigma_model-sigma_0-delta_sigma(:,i))./sigma_max;
-    f_epsilon(i*3-2:i*3) = (zeta_k(4:6)-[roll(i);pitch(i);delta_yaw(i)]-[0;0;psi_0])./epsilon_max;
+    f_tau(i*n-(n-1):i*n) = (tau_zeta-tau(:,i)); 
+    f_sigma(i*n-(n-1):i*n) = (sigma_model-sigma_0-delta_sigma(:,i));
+    f_epsilon(i*3-2:i*3) = (zeta_k(4:6)-[roll(i);pitch(i);delta_yaw(i)]-[0;0;psi_0]);
 end
 F = [f_tau; f_sigma; f_epsilon];
 % W = diag([repmat([1/(force_max^2); 1/(force_max^2); 1/(force_max^2); ...
