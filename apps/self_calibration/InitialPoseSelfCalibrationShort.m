@@ -62,7 +62,8 @@ sensor_disturb.loadcell_noise = 10;                                      %[N]
 
 %% Initial-Pose Self-Calibration simulation
 
-for meas_idx = 4:length(axis_grid_points)
+% for meas_idx = 1:length(axis_grid_points)
+for meas_idx = 5:length(axis_grid_points)
     [Z_ideal,k] = GenerateConfigPosesBrutal(axis_grid_points(meas_idx,:),pose_bounds);
     Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
     
@@ -210,7 +211,7 @@ end
 %     '_',num2str(rad2deg(max(sensor_disturb.swivel_noise))),...
 %     '_',num2str(max(sensor_disturb.loadcell_noise)), ...
 %     '_',num2str(rad2deg(max(sensor_disturb.AHRS_noise))),'.mat');
-filename = strcat(folder,"/out_0orient","_combined_right_disturb");
+filename = strcat(folder,"/out_0orient","_combined_right_disturb__");
 save(filename,'sc_output')
 %% Show results
 
