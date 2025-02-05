@@ -72,7 +72,7 @@ for meas_idx = 5:length(axis_grid_points)
         % IK simulation
         [X_real, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimShortSwivelAHRS( ...
             cdpr_variables,cdpr_parameters,Z_ideal,k, ...
-            control_disturb,sensor_disturb,disturb_idx/N);
+            control_disturb,sensor_disturb,1);
 
         % guess generation
         X_guess = Z_ideal;
@@ -115,7 +115,7 @@ for meas_idx = 5:length(axis_grid_points)
         % IK simulation
         [X_real, delta_length_meas, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimShortLengthSwivelAHRS( ...
             cdpr_variables,cdpr_parameters,Z_ideal,k, ...
-            control_disturb,sensor_disturb,disturb_idx/N);
+            control_disturb,sensor_disturb,1);
 
         % guess generation
         X_guess = Z_ideal;
@@ -158,7 +158,7 @@ for meas_idx = 5:length(axis_grid_points)
         % IK simulation
         [X_real, loadcell_meas, delta_sigma_meas, delta_psi_meas, phi_meas, theta_meas] = ControlSimShortLoadcellSwivelAHRS( ...
             cdpr_variables,cdpr_parameters,Z_ideal,k, ...
-            control_disturb,sensor_disturb,disturb_idx/N);
+            control_disturb,sensor_disturb,1);
 
         % guess generation
         X_guess = Z_ideal;
@@ -211,7 +211,7 @@ end
 %     '_',num2str(rad2deg(max(sensor_disturb.swivel_noise))),...
 %     '_',num2str(max(sensor_disturb.loadcell_noise)), ...
 %     '_',num2str(rad2deg(max(sensor_disturb.AHRS_noise))),'.mat');
-filename = strcat(folder,"/out_0orient","_combined_right_disturb__");
+filename = strcat(folder,"/out_0orient","_combined_uniform_disturb");
 save(filename,'sc_output')
 %% Show results
 
