@@ -1,13 +1,13 @@
-function [f,j] = CostFunWeightSelfCalibShortLengthSwivelAHRS(cdpr_v,cdpr_p,X,k,delta_length,delta_sigma,roll,pitch,delta_yaw)
+function [f,j] = CostFunWeightSelfCalibShortLengthSwivelAHRS(cdpr_v,cdpr_p,X,k,delta_length,delta_sigma,roll,pitch,delta_yaw,sensor_disturb)
 % This is the cost function for a self-calibration optimization problem
 % where the initial pose of a CDPR has to be estimated using cable length 
 % variation, swivel angle variation measures and euler angles from an AHRS.
 % Read Zoffoli2025 CableCon for the complete formulation.
 
 % set constants for the weighing matrix
-length_max = 6;
-sigma_max = 2*pi;
-epsilon_max = pi/2;
+length_max = sensor_disturb.length_noise;
+sigma_max = sensor_disturb.swivel_noise;
+epsilon_max = sensor_disturb.AHRS_noise;
 
 % extract variables and parameters 
 zeta_0 = X(1:cdpr_p.pose_dim);
