@@ -50,7 +50,7 @@ pose_bounds = [-1.2 1.2; -0.2 0.2; -1.6 0.8; 0 0; 0 0; 0 0];  %0 orient
 % pose_bounds = [-1.4 1.4; -0.2 0.2; -1.6 1.1; -pi/24 pi/24;  -pi/6 pi/6; -pi/24 pi/24];
 
 % assign disturb values
-N = 1;
+N = 50;
 control_disturb.position_bias = 0;                                      %[m]
 control_disturb.orientation_bias = 0;                                   %[rad]
 control_disturb.position_noise = 0;                                     %[m]
@@ -63,7 +63,7 @@ sensor_disturb.loadcell_noise = 10;                                      %[N]
 %% Initial-Pose Self-Calibration simulation
 
 % for meas_idx = 1:length(axis_grid_points)
-for meas_idx = 4:5
+for meas_idx = 1:3
     [Z_ideal,k] = GenerateConfigPosesBrutal(axis_grid_points(meas_idx,:),pose_bounds);
     Z_ideal=reshape(Z_ideal,[cdpr_parameters.pose_dim*k 1]);
     
@@ -288,7 +288,7 @@ end
 %     '_',num2str(rad2deg(max(sensor_disturb.swivel_noise))),...
 %     '_',num2str(max(sensor_disturb.loadcell_noise)), ...
 %     '_',num2str(rad2deg(max(sensor_disturb.AHRS_noise))),'.mat');
-filename = strcat(folder,"/out_0orient","_combined_uniform_disturb45");
+filename = strcat(folder,"/out_0orient","_combined_uniform_disturb45_");
 save(filename,'sc_output')
 %% Show results
 
